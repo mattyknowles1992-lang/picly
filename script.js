@@ -207,19 +207,34 @@ document.addEventListener('DOMContentLoaded', () => {
     if (logoutBtn) {
         logoutBtn.addEventListener('click', async () => {
             try {
-                await fetch('/api/auth/logout', {
+                const response = await fetch('/api/auth/logout', {
                     method: 'POST',
-                    credentials: 'include'
+                    credentials: 'include',
+                    headers: {
+                        'Cache-Control': 'no-cache, no-store, must-revalidate'
+                    }
                 });
                 
-                // Show auth buttons, hide credits
-                document.getElementById('authButtons').style.display = 'flex';
-                document.getElementById('creditDisplay').style.display = 'none';
+                const data = await response.json();
                 
-                showNotification('Logged out successfully');
-                
-                // Reload page to reset state
-                setTimeout(() => location.reload(), 1000);
+                if (response.ok) {
+                    // Clear any cached user data
+                    sessionStorage.clear();
+                    localStorage.removeItem('userCredits');
+                    
+                    // Show auth buttons, hide credits
+                    document.getElementById('authButtons').style.display = 'flex';
+                    document.getElementById('creditDisplay').style.display = 'none';
+                    
+                    showNotification('Logged out successfully');
+                    
+                    // Force a hard reload without cache after a brief delay
+                    setTimeout(() => {
+                        window.location.href = window.location.href.split('?')[0] + '?nocache=' + Date.now();
+                    }, 800);
+                } else {
+                    showNotification(data.error || 'Logout failed', 'error');
+                }
             } catch (error) {
                 showNotification('Logout error: ' + error.message, 'error');
             }

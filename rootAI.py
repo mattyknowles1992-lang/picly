@@ -306,10 +306,36 @@ def logout():
         if session_token:
             result = user_db.logout_user(session_token)
             response = make_response(jsonify(result), 200)
-            response.set_cookie('session_token', '', expires=0)
+            # Properly clear session cookie with all security attributes
+            response.set_cookie(
+                'session_token',
+                '',
+                max_age=0,
+                expires=0,
+                httponly=True,
+                secure=False,
+                samesite='Lax',
+                path='/'
+            )
+            # Prevent caching of logout response
+            response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+            response.headers['Pragma'] = 'no-cache'
+            response.headers['Expires'] = '0'
             return response
         else:
-            return jsonify({'success': False, 'error': 'No active session'}), 400
+            response = make_response(jsonify({'success': True, 'message': 'No active session'}), 200)
+            # Clear cookie anyway just to be safe
+            response.set_cookie(
+                'session_token',
+                '',
+                max_age=0,
+                expires=0,
+                httponly=True,
+                secure=False,
+                samesite='Lax',
+                path='/'
+            )
+            return response
             
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -322,17 +348,30 @@ def validate_session():
         session_token = request.cookies.get('session_token')
         
         if not session_token:
-            return jsonify({'valid': False, 'error': 'No session token'}), 401
+            response = make_response(jsonify({'valid': False, 'error': 'No session token'}), 401)
+            # Prevent caching of validation response
+            response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+            response.headers['Pragma'] = 'no-cache'
+            response.headers['Expires'] = '0'
+            return response
         
         result = user_db.validate_session(session_token)
         
         if result['valid']:
-            return jsonify(result), 200
+            response = make_response(jsonify(result), 200)
         else:
-            return jsonify(result), 401
+            response = make_response(jsonify(result), 401)
+        
+        # Prevent caching of validation response
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+        return response
             
     except Exception as e:
-        return jsonify({'valid': False, 'error': str(e)}), 500
+        response = make_response(jsonify({'valid': False, 'error': str(e)}), 500)
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        return response
 
 
 # Middleware to check authentication for protected routes

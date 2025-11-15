@@ -393,49 +393,49 @@ const promptLibrary = [
     }
 ];
 
-// Featured Examples with simulated images
+// Featured Examples with high-quality AI images
 const featuredExamples = [
     {
         id: 1,
-        title: 'Sunset Mountain Peak',
-        prompt: 'Majestic snow-capped mountain peak at golden hour, dramatic orange and pink sky, wispy clouds, alpenglow, professional landscape photography, wide angle, highly detailed, 8K',
+        title: 'Epic Mountain Vista',
+        prompt: 'Majestic alpine mountain range at dawn, jagged snow-capped peaks piercing dramatic crepuscular rays, layered atmospheric perspective with misty valleys, volumetric cloud formations, golden hour alpenglow on granite faces, shot with Phase One IQ4 150MP, ultra-wide 14mm lens, focus stacking for infinite depth of field, National Geographic cover quality, Peter Lik photography style, HDR landscape photography, hyperrealistic textures, 16K resolution',
         category: 'landscape',
-        color: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
+        imageUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=95'
     },
     {
         id: 2,
-        title: 'Cyberpunk Samurai',
-        prompt: 'Cyberpunk samurai warrior, neon armor, katana sword, futuristic Tokyo street background, rain, neon lights reflection, cinematic, highly detailed, digital art, artstation trending',
+        title: 'Cyberpunk City',
+        prompt: 'Neo-Tokyo megacity at night, towering arcology structures with holographic kanji advertisements, neon-lit rain-slicked streets with puddle reflections, flying vehicles with light trails, dense atmospheric fog with volumetric light shafts, Blade Runner 2049 cinematography, cyberpunk street level perspective, intricate architectural greebling, wet asphalt specular highlights, moody color grading with teal and orange, matte painting by Simon Stalenhag, photorealistic rendering, 8K cinematic quality',
         category: 'fantasy',
-        color: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
+        imageUrl: 'https://images.unsplash.com/photo-1518837695005-2083093ee35b?w=800&q=95'
     },
     {
         id: 3,
-        title: 'Vintage Coffee Shop',
-        prompt: 'Cozy vintage coffee shop interior, warm lighting, wooden furniture, books on shelves, steaming coffee cup, afternoon sunlight through window, atmospheric, highly detailed, photorealistic',
+        title: 'Modern Luxury Home',
+        prompt: 'Ultra-modern minimalist villa with cantilevered design, floor-to-ceiling structural glazing with minimal frames, infinity edge pool reflecting golden hour sky, concrete and blackened steel materiality, landscaped with Japanese zen garden, architectural photography with tilt-shift lens, perfect symmetry and leading lines, shot during blue hour with interior lights on, professional real estate photography style, Archdaily featured quality, Corona renderer realism, 8K archviz',
         category: 'architecture',
-        color: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)'
+        imageUrl: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=95'
     },
     {
         id: 4,
-        title: 'Ethereal Portrait',
-        prompt: 'Ethereal portrait of a woman with flowing hair, soft backlight, dreamy atmosphere, pastel colors, bokeh background, fantasy photography, magical mood, highly detailed, 8K',
+        title: 'Cinematic Portrait',
+        prompt: 'Portrait of a distinguished individual, Hasselblad H6D-400c camera, 85mm f/1.2 Zeiss lens, dramatic Rembrandt lighting with rim light, golden hour ambiance, bokeh depth of field, film grain texture, warm color grading with teal shadows, professional retouching, National Geographic style, hyperrealistic skin detail, 8K RAW, award-winning portrait photography',
         category: 'portrait',
-        color: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'
+        imageUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&q=95'
     },
     {
         id: 5,
-        title: 'Luxury Perfume Bottle',
-        prompt: 'Luxury perfume bottle, crystal clear glass, golden accents, soft lighting, elegant composition, product photography, white background, reflections, commercial quality, 8K',
+        title: 'Luxury Watch',
+        prompt: 'Swiss luxury watch macro photography, intricate exposed tourbillon movement, dramatic Rembrandt lighting with subtle fill, polished sapphire crystal reflections, brushed titanium case detail, depth of field on mechanical components, floating on gradient black background, professional product photography by Peter McKinnon style, focus stacking for infinite sharpness, commercial Vogue Watches quality, Phase One IQ4 camera, ultra-high resolution macro lens, 100MP detail, advertising campaign grade',
         category: 'product',
-        color: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)'
+        imageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&q=95'
     },
     {
         id: 6,
-        title: 'Aurora Abstract',
-        prompt: 'Abstract aurora borealis waves, flowing light patterns, purple green and blue, cosmic energy, digital art, smooth gradients, mesmerizing, wallpaper quality, 8K',
+        title: 'Space Nebula',
+        prompt: 'Pillars of Creation nebula in Eagle Nebula, vibrant cosmic gas clouds in purple, teal and gold hues, countless distant stars like diamond dust, deep space astrophotography, James Webb Space Telescope infrared imaging style, Hubble Heritage quality, hydrogen-alpha emission regions, volumetric nebula density, astronomical accuracy with artistic color grading, ultra-detailed star formations, NASA APOD featured quality, 16K resolution cosmic masterpiece',
         category: 'abstract',
-        color: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)'
+        imageUrl: 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=800&q=95'
     }
 ];
 
@@ -576,19 +576,25 @@ function renderPromptLibrary(category = 'all') {
 
 // Render Featured Examples
 function renderExamples() {
-    examplesGrid.innerHTML = featuredExamples.map(example => `
+    examplesGrid.innerHTML = featuredExamples.map(example => {
+        const promptPreview = example.prompt.length > 120 
+            ? example.prompt.substring(0, 120) + '...' 
+            : example.prompt;
+        
+        return `
         <div class="example-card" onclick="showExample(${example.id})">
             <div class="example-image">
-                <div class="example-placeholder" style="background: ${example.color}">
-                    <span style="font-size: 3rem;">🖼️</span>
-                </div>
+                <img src="${example.imageUrl}" alt="${example.title}" loading="lazy" />
             </div>
             <div class="example-info">
                 <h3>${example.title}</h3>
-                <div class="example-prompt">"${example.prompt}"</div>
+                <div class="example-prompt" id="prompt-${example.id}">
+                    <span class="prompt-text">${promptPreview}</span>
+                    ${example.prompt.length > 120 ? `<button class="read-more-btn" onclick="event.stopPropagation(); togglePrompt(${example.id})">Read More</button>` : ''}
+                </div>
             </div>
         </div>
-    `).join('');
+    `}).join('');
 }
 
 // Setup Event Listeners
@@ -1119,30 +1125,43 @@ function downloadImage(url) {
     showNotification('Image downloaded!');
 }
 
+// Toggle prompt read more/less
+function togglePrompt(id) {
+    const example = featuredExamples.find(ex => ex.id === id);
+    if (!example) return;
+    
+    const promptElement = document.getElementById(`prompt-${id}`);
+    const promptText = promptElement.querySelector('.prompt-text');
+    const button = promptElement.querySelector('.read-more-btn');
+    
+    if (button.textContent === 'Read More') {
+        promptText.textContent = example.prompt;
+        button.textContent = 'Show Less';
+    } else {
+        const promptPreview = example.prompt.substring(0, 120) + '...';
+        promptText.textContent = promptPreview;
+        button.textContent = 'Read More';
+    }
+}
+
 // Show example in modal
 function showExample(id) {
     const example = featuredExamples.find(e => e.id === id);
     if (!example) return;
     
-    modalPrompt.innerHTML = `<strong>Prompt:</strong> "${example.prompt}"`;
+    modalPrompt.innerHTML = `<strong>Prompt:</strong><br><span style="font-style: italic; color: var(--text-secondary); line-height: 1.6; display: block; margin-top: 8px;">"${example.prompt}"</span>`;
     
-    // Create placeholder for modal
-    const placeholderDiv = document.createElement('div');
-    placeholderDiv.style.cssText = `
-        width: 800px;
-        height: 600px;
-        background: ${example.color};
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-size: 4rem;
-    `;
-    placeholderDiv.innerHTML = '🖼️';
+    // Use actual image
+    if (modalImage.tagName === 'DIV') {
+        const img = document.createElement('img');
+        img.id = 'modalImage';
+        img.style.cssText = 'width: 100%; max-width: 800px; border-radius: 12px;';
+        modalImage.replaceWith(img);
+    }
     
-    modalImage.replaceWith(placeholderDiv);
-    placeholderDiv.id = 'modalImage';
+    const imgElement = document.getElementById('modalImage');
+    imgElement.src = example.imageUrl;
+    imgElement.alt = example.title;
     
     modal.classList.add('show');
 }

@@ -1553,6 +1553,47 @@ body {
     color: var(--text-secondary);
 }
 
+.example-info {
+    padding: 1.5rem;
+}
+
+.example-info h3 {
+    font-size: 1.2rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-primary);
+}
+
+.example-prompt {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    font-style: italic;
+}
+
+.prompt-text {
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.read-more-btn {
+    background: transparent;
+    border: 1px solid var(--primary);
+    color: var(--primary);
+    padding: 0.4rem 1rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-top: 0.5rem;
+}
+
+.read-more-btn:hover {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
 /* ============================================
    SOCIAL PROOF SECTION
    ============================================ */

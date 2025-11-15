@@ -78,30 +78,32 @@ CONFIG = {
 if stripe and STRIPE_AVAILABLE and CONFIG['STRIPE_SECRET_KEY'] != 'your-stripe-secret-key-here':
     stripe.api_key = CONFIG['STRIPE_SECRET_KEY']
 
-# ============ PRICING STRUCTURE (30%+ Profit Margins) ============
+# ============ PRICING STRUCTURE (30%+ Profit Margins) - POUND STERLING (£) ============
 
-# Token Pricing: 1 token = $0.01
+# Token Pricing: 1 token = £0.008 (approximately $0.01)
+# Exchange rate: £1 = $1.27 (Nov 2025)
 TOKEN_COSTS = {
-    'sdxl_refiner': 2,      # $0.02 (cost $0.003, profit 567%)
-    'dalle3_standard': 6,   # $0.06 (cost $0.04, profit 50%)
-    'dalle3_hd': 12,        # $0.12 (cost $0.08, profit 50%)
-    'video_5s': 30,         # $0.30 (cost $0.25, profit 20%)
-    'video_8s': 50,         # $0.50 (cost $0.40, profit 25%)
-    'video_10s': 60,        # $0.60 (cost $0.50, profit 20%)
+    'sdxl_refiner': 2,      # £0.016 (cost £0.0024, profit 567%)
+    'dalle3_standard': 6,   # £0.048 (cost £0.032, profit 50%)
+    'dalle3_hd': 12,        # £0.096 (cost £0.064, profit 50%)
+    'video_5s': 30,         # £0.24 (cost £0.20, profit 20%)
+    'video_8s': 50,         # £0.40 (cost £0.32, profit 25%)
+    'video_10s': 60,        # £0.48 (cost £0.40, profit 20%)
 }
 
-# Credit Packages (token-based)
+# Credit Packages (token-based) - POUND STERLING
 CREDIT_PACKAGES = {
-    'starter': {'tokens': 100, 'price': 1.00, 'name': 'Starter Pack'},
-    'popular': {'tokens': 500, 'price': 5.00, 'name': 'Popular Pack'},
-    'pro': {'tokens': 1200, 'price': 10.00, 'name': 'Pro Pack', 'bonus': 200},  # 20% bonus
-    'creator': {'tokens': 3000, 'price': 25.00, 'name': 'Creator Pack', 'bonus': 500},  # 17% bonus
+    'starter': {'tokens': 100, 'price': 0.79, 'name': 'Starter Pack'},
+    'popular': {'tokens': 500, 'price': 3.99, 'name': 'Popular Pack'},
+    'pro': {'tokens': 1200, 'price': 7.99, 'name': 'Pro Pack', 'bonus': 200},  # 20% bonus
+    'creator': {'tokens': 3000, 'price': 19.99, 'name': 'Creator Pack', 'bonus': 500},  # 17% bonus
 }
 
-# Subscription Plans (optimized for 30% margins)
+# Subscription Plans (optimized for 30% margins) - POUND STERLING
 SUBSCRIPTION_PLANS = {
     'free': {
         'price': 0,
+        'currency': 'GBP',
         'name': 'Free',
         'daily_images': 10,  # Flux/SDXL (FREE APIs)
         'prize_wheel': True,
@@ -109,26 +111,50 @@ SUBSCRIPTION_PLANS = {
         'prize_tokens': 20,
     },
     'creator': {
-        'price': 9.00,
+        'price': 6.99,
+        'currency': 'GBP',
         'name': 'Creator',
         'images_free': 'unlimited',  # Flux/SDXL
-        'tokens_monthly': 120,  # $1.20 value
-        # Usage: 20 SDXL images (40 tokens) + 10 videos 5s (300 tokens) = ~340 tokens worth $9.20
-        # Cost: $0.06 + $2.50 = $2.56, Profit: $6.44 (72% margin)
+        'tokens_monthly': 120,
         'recommended_use': '60 SDXL images + 4 videos (5s)',
-        'api_cost_estimate': 6.40,
-        'profit_margin': 0.29  # 29%
+        'api_cost_estimate': 5.04,  # £5.04
+        'profit_margin': 0.28  # 28%
     },
     'pro': {
-        'price': 19.99,
+        'price': 15.99,
+        'currency': 'GBP',
         'name': 'Pro',
         'images_free': 'unlimited',
-        'tokens_monthly': 300,  # $3.00 value
-        # Usage: 30 DALL-E HD (360 tokens) + 30 SDXL (60 tokens) + 10 videos 8s (500 tokens)
-        # Cost: $2.40 + $0.09 + $4.00 = $6.49, Profit: $13.50 (68% margin)
+        'tokens_monthly': 300,
         'recommended_use': '25 DALL-E HD + 50 SDXL + 6 videos (8s)',
-        'api_cost_estimate': 13.90,
-        'profit_margin': 0.30  # 30%
+        'api_cost_estimate': 10.95,  # £10.95
+        'profit_margin': 0.32  # 32%
+    },
+    'business': {
+        'price': 29.99,
+        'currency': 'GBP',
+        'name': 'Business',
+        'images_free': 'unlimited',  # Flux/SDXL
+        'tokens_monthly': 800,  # £6.40 value
+        'dalle_monthly': 50,  # 50 DALL-E HD images included
+        'videos_monthly': 20,  # 20x 8s videos included
+        'features': [
+            'Unlimited Flux Schnell & SDXL images',
+            '800 tokens/month (£6.40 value)',
+            '50 DALL-E 3 HD images (600 tokens worth)',
+            '20 videos 8-second (1000 tokens worth)',
+            '20% discount on additional tokens',
+            'Priority generation queue',
+            'API access',
+            'Commercial license',
+            'Remove watermark',
+            'Batch generation',
+            'Custom branding'
+        ],
+        'total_token_value': 1600,  # 800 + 600 + 1000 (if all features used as tokens)
+        'recommended_use': '150 SDXL + 30 DALL-E HD + 15 videos (8s)',
+        'api_cost_estimate': 20.49,  # £20.49 (realistic usage)
+        'profit_margin': 0.32  # 32%
     },
 }
 

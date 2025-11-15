@@ -15,7 +15,14 @@ from collections import defaultdict
 import time
 
 # Image enhancement libraries
-from PIL import Image, ImageEnhance, ImageFilter
+try:
+    from PIL import Image, ImageEnhance, ImageFilter
+    PIL_AVAILABLE = True
+except (ImportError, Exception):
+    Image = None
+    ImageEnhance = None
+    ImageFilter = None
+    PIL_AVAILABLE = False
 try:
     import cv2
     CV2_AVAILABLE = True

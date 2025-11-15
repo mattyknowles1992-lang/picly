@@ -520,22 +520,31 @@
             <!-- Edit Mode -->
             <div class="generator-card" id="editMode" style="display: none;">
                 <div class="edit-input-area">
-                    <!-- Image Upload -->
-                    <div class="upload-section">
-                        <label for="imageUpload" class="upload-label">
-                            <div class="upload-box" id="uploadBox">
-                                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
-                                </svg>
-                                <p class="upload-text">Click to upload or drag & drop</p>
-                                <p class="upload-hint">PNG, JPG up to 10MB</p>
+                    <!-- Edit Controls Grid (Upload + Quality Boost) -->
+                    <div class="controls-grid">
+                        <!-- Image Upload -->
+                        <div class="upload-section">
+                            <label for="imageUpload" class="upload-label">
+                                <div class="upload-box" id="uploadBox">
+                                    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                                    </svg>
+                                    <p class="upload-text">Click to upload or drag & drop</p>
+                                    <p class="upload-hint">PNG, JPG up to 10MB</p>
+                                </div>
+                                <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+                            </label>
+                            <div id="imagePreview" class="image-preview" style="display: none;">
+                                <img id="previewImg" src="" alt="Preview">
+                                <button id="removeImage" class="remove-btn">✕ Remove</button>
                             </div>
-                            <input type="file" id="imageUpload" accept="image/*" style="display: none;">
-                        </label>
-                        <div id="imagePreview" class="image-preview" style="display: none;">
-                            <img id="previewImg" src="" alt="Preview">
-                            <button id="removeImage" class="remove-btn">✕ Remove</button>
                         </div>
+                        
+                        <!-- Quality Boost -->
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="editQualityBoost" checked>
+                            ✨ Quality Boost
+                        </label>
                     </div>
 
                     <!-- Edit Prompt -->
@@ -561,16 +570,11 @@
                     </div>
 
                     <!-- Edit Controls -->
-                    <div class="controls-grid">
+                    <div class="edit-engine-select">
                         <select id="editEngine">
                             <option value="dalle">🎨 DALL-E (Best for editing)</option>
                             <option value="stability">🎨 Stability AI (Advanced)</option>
                         </select>
-
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="editQualityBoost" checked>
-                            ✨ Quality Boost
-                        </label>
                     </div>
 
                     <button id="editBtn" class="btn-primary" disabled>Edit Image</button>

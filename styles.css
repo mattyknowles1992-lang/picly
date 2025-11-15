@@ -518,33 +518,41 @@ body {
 }
 
 .upload-box {
-    padding: 3rem 2rem;
-    background: rgba(0, 0, 0, 0.2);
+    padding: 2rem 1.5rem;
+    background: rgba(0, 0, 0, 0.3);
     border: 2px dashed var(--glass-border);
     border-radius: 12px;
     text-align: center;
     transition: var(--transition);
+    cursor: pointer;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .upload-box:hover {
     border-color: var(--primary);
-    background: rgba(99, 102, 241, 0.05);
+    background: rgba(99, 102, 241, 0.1);
+    transform: translateY(-2px);
 }
 
 .upload-box svg {
-    stroke: var(--text-muted);
+    stroke: var(--primary);
     margin-bottom: 1rem;
+    opacity: 0.8;
 }
 
 .upload-text {
-    font-size: 1.1rem;
+    font-size: 1rem;
     color: var(--text-primary);
     margin-bottom: 0.5rem;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .upload-hint {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--text-muted);
 }
 
@@ -713,6 +721,55 @@ body {
     position: relative;
     display: inline-block;
 }
+
+/* Edit Section Styles */
+.edit-engine-select {
+    margin-bottom: 1.5rem;
+}
+
+.edit-engine-select select {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 16px;
+    padding-right: 3rem;
+}
+
+.edit-engine-select select:hover {
+    border-color: var(--primary);
+    background-color: rgba(99, 102, 241, 0.15);
+}
+
+.edit-engine-select select:focus {
+    outline: none;
+    border-color: var(--primary);
+    background-color: rgba(0, 0, 0, 0.6);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.upload-section {
+    height: 100%;
+}
+
+.upload-section .upload-label {
+    height: 100%;
+}
+
+.upload-section .upload-box {
+    height: 100%;
+    min-height: 200px;
+}
+
 
 .image-preview-inline img {
     max-width: 200px;

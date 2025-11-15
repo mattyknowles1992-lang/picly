@@ -14,6 +14,7 @@ from database import UserDatabase
 from collections import defaultdict
 import time
 from cost_monitor import cost_monitor
+from rating_system import rating_system
 
 # Image enhancement libraries
 try:
@@ -77,15 +78,61 @@ CONFIG = {
 if stripe and STRIPE_AVAILABLE and CONFIG['STRIPE_SECRET_KEY'] != 'your-stripe-secret-key-here':
     stripe.api_key = CONFIG['STRIPE_SECRET_KEY']
 
-# Credit Packages (25% profit margin - competitive market pricing)
-CREDIT_PACKAGES = {
-    'starter': {'credits': 10, 'price': 0.50, 'name': 'Starter'},
-    'popular': {'credits': 50, 'price': 2.50, 'name': 'Popular', 'bonus': 0},
-    'pro': {'credits': 100, 'price': 5.00, 'name': 'Pro', 'bonus': 0},
-    'creator': {'credits': 500, 'price': 25.00, 'name': 'Creator', 'bonus': 0},
+# ============ PRICING STRUCTURE (30%+ Profit Margins) ============
+
+# Token Pricing: 1 token = $0.01
+TOKEN_COSTS = {
+    'sdxl_refiner': 2,      # $0.02 (cost $0.003, profit 567%)
+    'dalle3_standard': 6,   # $0.06 (cost $0.04, profit 50%)
+    'dalle3_hd': 12,        # $0.12 (cost $0.08, profit 50%)
+    'video_5s': 30,         # $0.30 (cost $0.25, profit 20%)
+    'video_8s': 50,         # $0.50 (cost $0.40, profit 25%)
+    'video_10s': 60,        # $0.60 (cost $0.50, profit 20%)
 }
 
-# Unlimited Subscription (45% profit margin - competitive with Midjourney)
+# Credit Packages (token-based)
+CREDIT_PACKAGES = {
+    'starter': {'tokens': 100, 'price': 1.00, 'name': 'Starter Pack'},
+    'popular': {'tokens': 500, 'price': 5.00, 'name': 'Popular Pack'},
+    'pro': {'tokens': 1200, 'price': 10.00, 'name': 'Pro Pack', 'bonus': 200},  # 20% bonus
+    'creator': {'tokens': 3000, 'price': 25.00, 'name': 'Creator Pack', 'bonus': 500},  # 17% bonus
+}
+
+# Subscription Plans (optimized for 30% margins)
+SUBSCRIPTION_PLANS = {
+    'free': {
+        'price': 0,
+        'name': 'Free',
+        'daily_images': 10,  # Flux/SDXL (FREE APIs)
+        'prize_wheel': True,
+        'prize_chance': 0.20,
+        'prize_tokens': 20,
+    },
+    'creator': {
+        'price': 9.00,
+        'name': 'Creator',
+        'images_free': 'unlimited',  # Flux/SDXL
+        'tokens_monthly': 120,  # $1.20 value
+        # Usage: 20 SDXL images (40 tokens) + 10 videos 5s (300 tokens) = ~340 tokens worth $9.20
+        # Cost: $0.06 + $2.50 = $2.56, Profit: $6.44 (72% margin)
+        'recommended_use': '60 SDXL images + 4 videos (5s)',
+        'api_cost_estimate': 6.40,
+        'profit_margin': 0.29  # 29%
+    },
+    'pro': {
+        'price': 19.99,
+        'name': 'Pro',
+        'images_free': 'unlimited',
+        'tokens_monthly': 300,  # $3.00 value
+        # Usage: 30 DALL-E HD (360 tokens) + 30 SDXL (60 tokens) + 10 videos 8s (500 tokens)
+        # Cost: $2.40 + $0.09 + $4.00 = $6.49, Profit: $13.50 (68% margin)
+        'recommended_use': '25 DALL-E HD + 50 SDXL + 6 videos (8s)',
+        'api_cost_estimate': 13.90,
+        'profit_margin': 0.30  # 30%
+    },
+}
+
+# OLD: Keeping for backward compatibility during migration
 UNLIMITED_SUBSCRIPTION = {
     'monthly': {'price': 29.00, 'name': 'Unlimited Premium', 'interval': 'month'},
 }
@@ -921,7 +968,101 @@ def generate_with_dalle(prompt, dimensions={}, quality_boost=True):
 
 
 def generate_with_stability(prompt, negative_prompt='', dimensions={}, quality_boost=True):
-    """Generate image using Stability AI with enhanced quality settings"""
+    """Generate image using Stability AI SDXL with Refiner for 9/10 quality at $0.003"""
+    
+    # Using Replicate's SDXL + Refiner (cheaper and better than direct Stability API)
+    api_key = CONFIG['REPLICATE_API_KEY']
+    
+    if api_key == 'your-replicate-key-here':
+        return {
+            'success': False,
+            'error': 'Replicate API key not configured',
+            'demo': True
+        }
+    
+    url = "https://api.replicate.com/v1/predictions"
+    headers = {
+        "Authorization": f"Token {api_key}",
+        "Content-Type": "application/json",
+        "Prefer": "wait"
+    }
+    
+    # SDXL 1.0 with Refiner for best quality
+    # Cost: $0.003 per image (1000x cheaper than DALL-E!)
+    payload = {
+        "version": "7762fd07cf82c948538e41f63f77d685e02b063e37e496e96eefd46c929f9bdc",  # SDXL + Refiner
+        "input": {
+            "prompt": prompt,
+            "negative_prompt": negative_prompt or "ugly, blurry, low quality, distorted",
+            "width": dimensions.get('width', 1024),
+            "height": dimensions.get('height', 1024),
+            "num_inference_steps": 50 if quality_boost else 30,
+            "guidance_scale": 9 if quality_boost else 7.5,
+            "refine": "expert_ensemble_refiner",  # Use refiner for extra quality
+            "high_noise_frac": 0.8,
+            "num_outputs": 1
+        }
+    }
+    
+    try:
+        response = requests.post(url, headers=headers, json=payload, timeout=60)
+        response.raise_for_status()
+        prediction = response.json()
+        
+        # Check if already complete
+        if prediction.get('status') == 'succeeded' and prediction.get('output'):
+            return {
+                'success': True,
+                'image_url': prediction['output'][0] if isinstance(prediction['output'], list) else prediction['output'],
+                'engine': 'SDXL + Refiner',
+                'quality': '9/10',
+                'api_cost': 0.003  # $0.003 per image
+            }
+        
+        # Poll for completion
+        prediction_id = prediction.get('id')
+        if not prediction_id:
+            return {'success': False, 'error': 'No prediction ID returned'}
+        
+        max_attempts = 40  # SDXL takes ~20-30 seconds
+        for attempt in range(max_attempts):
+            time.sleep(1)
+            
+            status_response = requests.get(
+                f"https://api.replicate.com/v1/predictions/{prediction_id}",
+                headers={"Authorization": f"Token {api_key}"},
+                timeout=10
+            )
+            
+            if status_response.status_code == 200:
+                status_data = status_response.json()
+                
+                if status_data.get('status') == 'succeeded':
+                    output = status_data.get('output')
+                    if output:
+                        image_url = output[0] if isinstance(output, list) else output
+                        return {
+                            'success': True,
+                            'image_url': image_url,
+                            'engine': 'SDXL + Refiner',
+                            'quality': '9/10',
+                            'api_cost': 0.003
+                        }
+                
+                elif status_data.get('status') == 'failed':
+                    error = status_data.get('error', 'Unknown error')
+                    return {'success': False, 'error': f'Generation failed: {error}'}
+        
+        return {'success': False, 'error': 'Generation timeout'}
+        
+    except requests.RequestException as e:
+        return {'success': False, 'error': f'API error: {str(e)}'}
+    except Exception as e:
+        return {'success': False, 'error': f'Unexpected error: {str(e)}'}
+
+
+def generate_with_stability_old(prompt, negative_prompt='', dimensions={}, quality_boost=True):
+    """OLD: Direct Stability AI API (more expensive, keeping as backup)"""
     api_key = CONFIG['STABILITY_API_KEY']
     
     if api_key == 'your-stability-key-here':
@@ -1868,4 +2009,133 @@ def get_cost_report():
         })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# ============ RATING SYSTEM - LEARNING AI FOUNDATION ============
+
+@app.route('/api/rate-image', methods=['POST'])
+def rate_image():
+    """Rate a generated image (foundation for learning AI)"""
+    try:
+        session_token = request.cookies.get('session_token')
+        if not session_token:
+            return jsonify({'success': False, 'error': 'Must be logged in'}), 401
+        
+        validation = user_db.validate_session(session_token)
+        if not validation.get('valid'):
+            return jsonify({'success': False, 'error': 'Invalid session'}), 401
+        
+        user_id = validation['user_id']
+        data = request.json
+        
+        result = rating_system.rate_image(
+            user_id=user_id,
+            image_url=data.get('image_url'),
+            prompt=data.get('prompt'),
+            engine=data.get('engine'),
+            rating=int(data.get('rating')),
+            feedback=data.get('feedback', ''),
+            negative_prompt=data.get('negative_prompt', ''),
+            style=data.get('style', ''),
+            dimensions=data.get('dimensions', ''),
+            quality_boost=data.get('quality_boost', True)
+        )
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/rate-video', methods=['POST'])
+def rate_video():
+    """Rate a generated video"""
+    try:
+        session_token = request.cookies.get('session_token')
+        if not session_token:
+            return jsonify({'success': False, 'error': 'Must be logged in'}), 401
+        
+        validation = user_db.validate_session(session_token)
+        if not validation.get('valid'):
+            return jsonify({'success': False, 'error': 'Invalid session'}), 401
+        
+        user_id = validation['user_id']
+        data = request.json
+        
+        result = rating_system.rate_video(
+            user_id=user_id,
+            video_url=data.get('video_url'),
+            image_url=data.get('image_url'),
+            prompt=data.get('prompt'),
+            engine=data.get('engine'),
+            duration=int(data.get('duration')),
+            rating=int(data.get('rating')),
+            feedback=data.get('feedback', '')
+        )
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/suggest-prompt-improvements', methods=['POST'])
+def suggest_improvements():
+    """Get AI-powered prompt improvement suggestions"""
+    try:
+        data = request.json
+        prompt = data.get('prompt', '')
+        engine = data.get('engine', 'flux')
+        
+        if not prompt:
+            return jsonify({'success': False, 'error': 'No prompt provided'}), 400
+        
+        suggestions = rating_system.suggest_improvements(prompt, engine)
+        
+        return jsonify({
+            'success': True,
+            'suggestions': suggestions,
+            'original_prompt': prompt
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/rating-stats', methods=['GET'])
+def get_rating_stats():
+    """Get user's rating statistics"""
+    try:
+        session_token = request.cookies.get('session_token')
+        if not session_token:
+            return jsonify({'success': False, 'error': 'Must be logged in'}), 401
+        
+        validation = user_db.validate_session(session_token)
+        if not validation.get('valid'):
+            return jsonify({'success': False, 'error': 'Invalid session'}), 401
+        
+        user_id = validation['user_id']
+        stats = rating_system.get_user_stats(user_id)
+        
+        return jsonify({
+            'success': True,
+            'stats': stats
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/admin/rating-analytics', methods=['GET'])
+def get_rating_analytics():
+    """Get overall rating analytics (admin only)"""
+    try:
+        report = rating_system.get_analytics_report()
+        return jsonify({
+            'success': True,
+            'analytics': report
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 

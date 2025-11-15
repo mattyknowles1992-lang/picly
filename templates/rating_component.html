@@ -1,0 +1,276 @@
+<!-- Rating System Component -->
+<!-- Add this to your image gallery/results display -->
+
+<div class="rating-container" id="rating-{{imageId}}" style="display: none;">
+    <div class="rating-overlay"></div>
+    <div class="rating-modal">
+        <button class="close-rating" onclick="closeRating('{{imageId}}')">&times;</button>
+        
+        <h3>Rate This Image</h3>
+        <img src="{{imageUrl}}" alt="Generated image" class="rating-preview">
+        
+        <div class="star-rating">
+            <span class="star" data-rating="1" onclick="setRating('{{imageId}}', 1)">★</span>
+            <span class="star" data-rating="2" onclick="setRating('{{imageId}}', 2)">★</span>
+            <span class="star" data-rating="3" onclick="setRating('{{imageId}}', 3)">★</span>
+            <span class="star" data-rating="4" onclick="setRating('{{imageId}}', 4)">★</span>
+            <span class="star" data-rating="5" onclick="setRating('{{imageId}}', 5)">★</span>
+        </div>
+        <p class="rating-label">Click to rate (1-5 stars)</p>
+        
+        <textarea 
+            id="feedback-{{imageId}}" 
+            placeholder="Optional: Tell us what you liked or didn't like..." 
+            rows="3"
+            class="feedback-input"
+        ></textarea>
+        
+        <button class="submit-rating" onclick="submitRating('{{imageId}}')">
+            Submit Rating
+        </button>
+        
+        <p class="rating-hint">💡 Your ratings help us improve AI quality!</p>
+    </div>
+</div>
+
+<style>
+.rating-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10000;
+}
+
+.rating-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+}
+
+.rating-modal {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.close-rating {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 2rem;
+    cursor: pointer;
+    color: #666;
+    line-height: 1;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+}
+
+.close-rating:hover {
+    color: #333;
+}
+
+.rating-modal h3 {
+    margin: 0 0 1rem 0;
+    font-size: 1.5rem;
+    color: #333;
+}
+
+.rating-preview {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.star-rating {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.star {
+    font-size: 3rem;
+    color: #ddd;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.star:hover,
+.star.active {
+    color: #ffd700;
+    transform: scale(1.1);
+}
+
+.rating-label {
+    text-align: center;
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+.feedback-input {
+    width: 100%;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0.75rem;
+    font-size: 1rem;
+    font-family: inherit;
+    resize: vertical;
+    margin-bottom: 1rem;
+}
+
+.feedback-input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.submit-rating {
+    width: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.submit-rating:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.submit-rating:active {
+    transform: translateY(0);
+}
+
+.rating-hint {
+    text-align: center;
+    color: #999;
+    font-size: 0.85rem;
+    margin-top: 1rem;
+    margin-bottom: 0;
+}
+</style>
+
+<script>
+// Rating system state
+let currentRating = {};
+
+function openRating(imageId, imageUrl, prompt, engine) {
+    const container = document.getElementById(`rating-${imageId}`);
+    if (container) {
+        container.style.display = 'block';
+        currentRating[imageId] = {
+            url: imageUrl,
+            prompt: prompt,
+            engine: engine,
+            rating: 0
+        };
+    }
+}
+
+function closeRating(imageId) {
+    const container = document.getElementById(`rating-${imageId}`);
+    if (container) {
+        container.style.display = 'none';
+        delete currentRating[imageId];
+        
+        // Reset stars
+        const stars = container.querySelectorAll('.star');
+        stars.forEach(star => star.classList.remove('active'));
+    }
+}
+
+function setRating(imageId, rating) {
+    currentRating[imageId].rating = rating;
+    
+    // Update star display
+    const container = document.getElementById(`rating-${imageId}`);
+    const stars = container.querySelectorAll('.star');
+    
+    stars.forEach((star, index) => {
+        if (index < rating) {
+            star.classList.add('active');
+        } else {
+            star.classList.remove('active');
+        }
+    });
+}
+
+async function submitRating(imageId) {
+    const data = currentRating[imageId];
+    
+    if (!data.rating || data.rating < 1) {
+        alert('Please select a rating (1-5 stars)');
+        return;
+    }
+    
+    const feedback = document.getElementById(`feedback-${imageId}`).value;
+    
+    try {
+        const response = await fetch('/api/rate-image', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                image_url: data.url,
+                prompt: data.prompt,
+                engine: data.engine,
+                rating: data.rating,
+                feedback: feedback
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Show success message
+            alert('Thank you for your rating! 🌟');
+            closeRating(imageId);
+        } else {
+            alert('Error submitting rating: ' + result.error);
+        }
+    } catch (error) {
+        alert('Error submitting rating: ' + error.message);
+    }
+}
+
+// Add rating button to image results
+function addRatingButton(imageElement, imageUrl, prompt, engine) {
+    const imageId = 'img-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    
+    const button = document.createElement('button');
+    button.className = 'rate-button';
+    button.innerHTML = '⭐ Rate This';
+    button.onclick = () => openRating(imageId, imageUrl, prompt, engine);
+    
+    imageElement.appendChild(button);
+    
+    // Create rating modal for this image
+    const ratingHTML = `...rating container HTML...`;
+    document.body.insertAdjacentHTML('beforeend', ratingHTML);
+}
+</script>

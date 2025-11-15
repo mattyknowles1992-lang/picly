@@ -743,6 +743,18 @@ def index():
     return send_from_directory('.', 'index.html')
 
 
+@app.route('/landing')
+def landing_page():
+    """Serve the landing page"""
+    return render_template('landing.html')
+
+
+@app.route('/pricing')
+def pricing_page():
+    """Serve the pricing page"""
+    return render_template('pricing.html')
+
+
 @app.route('/admin')
 def admin_dashboard():
     """Serve the admin dashboard"""

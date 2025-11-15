@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pricing - Picly | AI Images & Videos from £9.99</title>
+    <meta name="description" content="Professional AI image and video generation starting at £9.99/month. Unlimited images + up to 100 videos per month. All-in-one platform.">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+
+        .nav-links a {
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #667eea;
+        }
+
+        .btn-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.3s;
+        }
+
+        .btn-header:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Hero Section */
+        .pricing-hero {
+            text-align: center;
+            padding: 80px 20px 60px;
+            color: white;
+        }
+
+        .pricing-hero h1 {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .pricing-hero p {
+            font-size: 20px;
+            opacity: 0.95;
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+
+        .pricing-toggle {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border-radius: 50px;
+            padding: 8px;
+            display: inline-flex;
+            gap: 8px;
+            margin-top: 20px;
+        }
+
+        .toggle-btn {
+            padding: 12px 30px;
+            border-radius: 40px;
+            border: none;
+            background: transparent;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .toggle-btn.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Pricing Cards */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            margin: 40px 0;
+        }
+
+        .pricing-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px 30px;
+            position: relative;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+        .pricing-card.featured {
+            border: 3px solid #667eea;
+            transform: scale(1.05);
+        }
+
+        .pricing-card.featured::before {
+            content: "MOST POPULAR";
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 25px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .plan-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #667eea;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .plan-price {
+            font-size: 48px;
+            font-weight: 800;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .plan-price span {
+            font-size: 20px;
+            color: #666;
+            font-weight: 400;
+        }
+
+        .plan-description {
+            color: #666;
+            margin-bottom: 30px;
+            min-height: 40px;
+        }
+
+        .plan-features {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+
+        .plan-features li {
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .plan-features li::before {
+            content: "✓";
+            color: #4CAF50;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .plan-cta {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: block;
+            text-align: center;
+        }
+
+        .plan-cta.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .plan-cta.primary:hover {
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .plan-cta.secondary {
+            background: #f8f9fa;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .plan-cta.secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        /* Comparison Table */
+        .comparison-section {
+            background: white;
+            border-radius: 20px;
+            padding: 60px 40px;
+            margin: 60px 0;
+        }
+
+        .comparison-section h2 {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 40px;
+            color: #333;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow-x: auto;
+            display: block;
+        }
+
+        .comparison-table thead tr {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 20px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+
+        .comparison-table th {
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .comparison-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .comparison-table .feature-name {
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .check-mark {
+            color: #4CAF50;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .cross-mark {
+            color: #f44336;
+            font-size: 24px;
+        }
+
+        /* FAQ Section */
+        .faq-section {
+            background: white;
+            border-radius: 20px;
+            padding: 60px 40px;
+            margin: 60px 0;
+        }
+
+        .faq-section h2 {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 40px;
+            color: #333;
+        }
+
+        .faq-item {
+            margin-bottom: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .faq-question {
+            background: #f8f9fa;
+            padding: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.3s;
+        }
+
+        .faq-question:hover {
+            background: #e9ecef;
+        }
+
+        .faq-answer {
+            padding: 20px;
+            display: none;
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .faq-answer.active {
+            display: block;
+        }
+
+        /* Trust Section */
+        .trust-section {
+            text-align: center;
+            padding: 60px 20px;
+            color: white;
+        }
+
+        .trust-badges {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .trust-badge {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .trust-badge-icon {
+            font-size: 40px;
+        }
+
+        .trust-badge-text {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .pricing-hero h1 {
+                font-size: 32px;
+            }
+
+            .pricing-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .pricing-card.featured {
+                transform: scale(1);
+            }
+
+            .comparison-table {
+                font-size: 14px;
+            }
+
+            .comparison-table th,
+            .comparison-table td {
+                padding: 10px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">Picly</div>
+            <div class="nav-links">
+                <a href="/">Home</a>
+                <a href="/pricing">Pricing</a>
+                <a href="#faq">FAQ</a>
+            </div>
+            <a href="/signup" class="btn-header">Start Free</a>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <div class="pricing-hero">
+        <h1>Simple, Transparent Pricing</h1>
+        <p>Professional AI images and videos from £9.99/month. No hidden fees. Cancel anytime.</p>
+        <div class="pricing-toggle">
+            <button class="toggle-btn active">Monthly</button>
+            <button class="toggle-btn">Annual <span style="font-size: 12px;">(Save 20%)</span></button>
+        </div>
+    </div>
+
+    <!-- Pricing Cards -->
+    <div class="container">
+        <div class="pricing-grid">
+            <!-- Free Plan -->
+            <div class="pricing-card">
+                <div class="plan-name">Free</div>
+                <div class="plan-price">£0<span>/month</span></div>
+                <div class="plan-description">Perfect for trying out the platform</div>
+                <ul class="plan-features">
+                    <li>10 images per day</li>
+                    <li>Flux & SDXL quality (8.5-9/10)</li>
+                    <li>Daily prize wheel</li>
+                    <li>Win up to 20 tokens</li>
+                    <li>Save & download all images</li>
+                    <li>Access to prompt library</li>
+                </ul>
+                <a href="/signup" class="plan-cta secondary">Start Free</a>
+            </div>
+
+            <!-- User Plan -->
+            <div class="pricing-card">
+                <div class="plan-name">User</div>
+                <div class="plan-price">£9.99<span>/month</span></div>
+                <div class="plan-description">Great for content creators</div>
+                <ul class="plan-features">
+                    <li><strong>Unlimited</strong> Flux & SDXL images</li>
+                    <li>1050 tokens/month</li>
+                    <li><strong>30 cartoon videos</strong> (8s, 8-9/10)</li>
+                    <li>OR 21 premium videos (8s, 10/10)</li>
+                    <li>Commercial use license</li>
+                    <li>No watermark</li>
+                    <li>Priority queue</li>
+                    <li>HD downloads</li>
+                </ul>
+                <a href="/signup?plan=user" class="plan-cta primary">Get Started</a>
+            </div>
+
+            <!-- Creator Plan - Featured -->
+            <div class="pricing-card featured">
+                <div class="plan-name">Creator</div>
+                <div class="plan-price">£17.99<span>/month</span></div>
+                <div class="plan-description">For professional creators</div>
+                <ul class="plan-features">
+                    <li><strong>Everything in User</strong></li>
+                    <li>1950 tokens/month</li>
+                    <li><strong>55 cartoon videos</strong> (8s, 8-9/10)</li>
+                    <li>OR 39 premium videos (8s, 10/10)</li>
+                    <li>15% discount on tokens</li>
+                    <li>API access (coming soon)</li>
+                    <li>Batch generation</li>
+                    <li>Custom watermark</li>
+                </ul>
+                <a href="/signup?plan=creator" class="plan-cta primary">Start Creating</a>
+            </div>
+
+            <!-- Pro Plan -->
+            <div class="pricing-card">
+                <div class="plan-name">Pro</div>
+                <div class="plan-price">£32.00<span>/month</span></div>
+                <div class="plan-description">For agencies & production teams</div>
+                <ul class="plan-features">
+                    <li><strong>Everything in Creator</strong></li>
+                    <li>3500 tokens/month</li>
+                    <li><strong>100 cartoon videos</strong> (8s, 8-9/10)</li>
+                    <li>OR 70 premium videos (8s, 10/10)</li>
+                    <li>20% discount on tokens</li>
+                    <li>Fastest priority queue</li>
+                    <li>API access (higher limits)</li>
+                    <li>Batch generation (50 max)</li>
+                    <li>Custom branding</li>
+                    <li>Dedicated support</li>
+                </ul>
+                <a href="/signup?plan=pro" class="plan-cta primary">Go Pro</a>
+            </div>
+        </div>
+
+        <!-- Comparison Table -->
+        <div class="comparison-section">
+            <h2>📊 Detailed Feature Comparison</h2>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Free</th>
+                        <th>User<br/>£9.99</th>
+                        <th>Creator<br/>£17.99</th>
+                        <th>Pro<br/>£32.00</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="feature-name">Flux & SDXL Images</td>
+                        <td>10/day</td>
+                        <td>Unlimited</td>
+                        <td>Unlimited</td>
+                        <td>Unlimited</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Tokens/Month</td>
+                        <td>0*</td>
+                        <td>1050</td>
+                        <td>1950</td>
+                        <td>3500</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Cartoon Videos (8s)</td>
+                        <td class="cross-mark">✗</td>
+                        <td>30</td>
+                        <td>55</td>
+                        <td>100</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Premium Videos (8s)</td>
+                        <td class="cross-mark">✗</td>
+                        <td>21</td>
+                        <td>39</td>
+                        <td>70</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">DALL-E HD (max)</td>
+                        <td class="cross-mark">✗</td>
+                        <td>87</td>
+                        <td>162</td>
+                        <td>291</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Commercial Use</td>
+                        <td class="cross-mark">✗</td>
+                        <td class="check-mark">✓</td>
+                        <td class="check-mark">✓</td>
+                        <td class="check-mark">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">No Watermark</td>
+                        <td class="cross-mark">✗</td>
+                        <td class="check-mark">✓</td>
+                        <td class="check-mark">✓</td>
+                        <td class="check-mark">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Priority Queue</td>
+                        <td class="cross-mark">✗</td>
+                        <td class="check-mark">✓</td>
+                        <td class="check-mark">✓</td>
+                        <td>✓✓ Fastest</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">API Access</td>
+                        <td class="cross-mark">✗</td>
+                        <td class="cross-mark">✗</td>
+                        <td class="check-mark">✓</td>
+                        <td>✓ Higher limits</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Batch Generation</td>
+                        <td class="cross-mark">✗</td>
+                        <td class="cross-mark">✗</td>
+                        <td class="check-mark">✓</td>
+                        <td>✓ Up to 50</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Custom Branding</td>
+                        <td class="cross-mark">✗</td>
+                        <td class="cross-mark">✗</td>
+                        <td class="check-mark">✓</td>
+                        <td class="check-mark">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Dedicated Support</td>
+                        <td class="cross-mark">✗</td>
+                        <td class="cross-mark">✗</td>
+                        <td class="cross-mark">✗</td>
+                        <td class="check-mark">✓</td>
+                    </tr>
+                    <tr>
+                        <td class="feature-name">Token Discount</td>
+                        <td>0%</td>
+                        <td>0%</td>
+                        <td>15%</td>
+                        <td>20%</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p style="text-align: center; margin-top: 20px; color: #666;">* Free users can win tokens from daily prize wheel</p>
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="faq-section" id="faq">
+            <h2>❓ Frequently Asked Questions</h2>
+            
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>How does the token system work?</span>
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    Tokens are credits you use for premium features. 1 token = £0.008. Different features cost different amounts:
+                    <ul style="margin-top: 10px;">
+                        <li>SDXL image: 2 tokens (£0.016)</li>
+                        <li>DALL-E HD: 12 tokens (£0.096)</li>
+                        <li>Cartoon video (8s): 35 tokens (£0.28)</li>
+                        <li>Premium video (8s): 50 tokens (£0.40)</li>
+                    </ul>
+                    You can mix and match however you want! Flux and basic SDXL images are FREE and unlimited on paid plans.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>What's the difference between cartoon and premium videos?</span>
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    <strong>Cartoon videos (8-9/10 quality):</strong> Perfect for animations, explainer videos, social media content, and stylized videos. Costs 30% less tokens, so you get 42% more videos!
+                    <br/><br/>
+                    <strong>Premium videos (10/10 quality):</strong> Photorealistic, cinema-grade quality for commercials, product demos, and professional content.
+                    <br/><br/>
+                    You can use both in the same plan! Mix cartoon videos for social media and premium videos for important projects.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>Is it really unlimited images?</span>
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    Yes! Flux Schnell (8.5/10 quality) and SDXL + Refiner (9/10 quality) images are truly unlimited on all paid plans. Generate as many as you want - no caps, no throttling. Only premium features like DALL-E HD and videos use tokens.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>Can I cancel anytime?</span>
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    Absolutely! No contracts, no commitments. Cancel your subscription anytime from your account settings. You'll keep access until the end of your billing period.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>What happens to unused tokens?</span>
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    Monthly subscription tokens reset each month. However, any tokens you purchase separately (token packages) never expire! Buy tokens once, use them whenever you want.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>Do you offer refunds?</span>
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    Yes! We offer a 7-day money-back guarantee on your first subscription. If you're not satisfied, contact us within 7 days for a full refund, no questions asked.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>Can I upgrade or downgrade my plan?</span>
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    Yes! You can change plans anytime. When upgrading, you'll get immediate access to new features. When downgrading, the change takes effect at your next billing cycle.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>Is there an annual plan?</span>
+                    <span>+</span>
+                </div>
+                <div class="faq-answer">
+                    Coming soon! Annual plans will save you 20% compared to monthly billing. Sign up for our newsletter to be notified when they launch.
+                </div>
+            </div>
+        </div>
+
+        <!-- Trust Badges -->
+        <div class="trust-section">
+            <h2>Why Choose Picly?</h2>
+            <div class="trust-badges">
+                <div class="trust-badge">
+                    <div class="trust-badge-icon">🔒</div>
+                    <div class="trust-badge-text">Secure Payments<br/>via Stripe</div>
+                </div>
+                <div class="trust-badge">
+                    <div class="trust-badge-icon">💰</div>
+                    <div class="trust-badge-text">7-Day Money-Back<br/>Guarantee</div>
+                </div>
+                <div class="trust-badge">
+                    <div class="trust-badge-icon">⚡</div>
+                    <div class="trust-badge-text">Instant Access<br/>No Setup</div>
+                </div>
+                <div class="trust-badge">
+                    <div class="trust-badge-icon">🎯</div>
+                    <div class="trust-badge-text">Cancel Anytime<br/>No Contracts</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleFAQ(element) {
+            const answer = element.nextElementSibling;
+            const isActive = answer.classList.contains('active');
+            
+            // Close all FAQs
+            document.querySelectorAll('.faq-answer').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Reset all + signs
+            document.querySelectorAll('.faq-question span:last-child').forEach(item => {
+                item.textContent = '+';
+            });
+            
+            // Toggle current FAQ
+            if (!isActive) {
+                answer.classList.add('active');
+                element.querySelector('span:last-child').textContent = '−';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -3,7 +3,7 @@ AI Image Generator Backend Server
 Supports multiple AI image generation APIs with post-processing enhancement
 """
 
-from flask import Flask, request, jsonify, send_from_directory, make_response
+from flask import Flask, request, jsonify, send_from_directory, make_response, render_template
 from flask_cors import CORS
 import os
 import requests
@@ -13,6 +13,7 @@ import json
 from database import UserDatabase
 from collections import defaultdict
 import time
+from cost_monitor import cost_monitor
 
 # Image enhancement libraries
 try:
@@ -440,6 +441,15 @@ def stripe_webhook():
                 subscription_id = session['subscription']
                 user_db.activate_subscription(user_id, subscription_id)
                 print(f"Subscription activated for user {user_id}")
+                
+                # Log subscription revenue
+                amount = session['amount_total'] / 100  # Convert cents to dollars
+                cost_monitor.log_revenue(
+                    user_id=user_id,
+                    amount=amount,
+                    revenue_type='subscription',
+                    description=f'Monthly subscription: {subscription_id}'
+                )
             else:
                 # Add credits for one-time purchase
                 credits = int(session['metadata']['credits'])
@@ -452,6 +462,15 @@ def stripe_webhook():
                     amount=session['amount_total'] / 100
                 )
                 print(f"Credits added: {result}")
+                
+                # Log credit purchase revenue
+                amount = session['amount_total'] / 100
+                cost_monitor.log_revenue(
+                    user_id=user_id,
+                    amount=amount,
+                    revenue_type='credits',
+                    description=f'{credits} credits purchased ({package_id})'
+                )
         
         # Handle subscription cancellation
         elif event['type'] == 'customer.subscription.deleted':
@@ -620,6 +639,12 @@ def index():
     return send_from_directory('.', 'index.html')
 
 
+@app.route('/admin')
+def admin_dashboard():
+    """Serve the admin dashboard"""
+    return render_template('admin_dashboard.html')
+
+
 @app.route('/<path:path>')
 def serve_static(path):
     """Serve static files (CSS, JS)"""
@@ -715,6 +740,16 @@ def generate_image():
             result = generate_with_dalle(prompt, dimensions, quality_boost)
             
             if result.get('success'):
+                # Log API cost
+                api_cost = result.get('api_cost', 0.08)  # Default to HD cost
+                cost_monitor.log_api_cost(
+                    user_id=user_id,
+                    api_service='openai',
+                    operation='dalle3_hd',
+                    cost=api_cost,
+                    success=True
+                )
+                
                 # Deduct premium credit
                 user_db.use_credit(user_id, 'premium')
                 result['credits_used'] = 'premium'
@@ -850,12 +885,19 @@ def generate_with_dalle(prompt, dimensions={}, quality_boost=True):
     data = response.json()
     image_url = data['data'][0]['url']
     
+    # Calculate API cost based on quality and size
+    if quality == 'hd':
+        api_cost = 0.08  # $0.08 for HD quality
+    else:
+        api_cost = 0.04  # $0.04 for standard quality
+    
     return {
         'success': True,
         'image_url': image_url,
         'engine': 'DALL-E 3',
         'revised_prompt': data['data'][0].get('revised_prompt', prompt),
-        'quality': quality
+        'quality': quality,
+        'api_cost': api_cost
     }
 
 
@@ -992,6 +1034,7 @@ def generate_with_replicate(prompt, negative_prompt='', dimensions={}, quality_b
             
             # If prediction is already complete (Prefer: wait), return immediately
             if prediction.get('status') == 'succeeded' and prediction.get('output'):
+                # Replicate Flux Schnell is FREE (no cost to log)
                 return {
                     'success': True,
                     'image_url': prediction['output'][0] if isinstance(prediction['output'], list) else prediction['output'],
@@ -1027,6 +1070,7 @@ def generate_with_replicate(prompt, negative_prompt='', dimensions={}, quality_b
                         output = status_data.get('output')
                         if output:
                             image_url = output[0] if isinstance(output, list) else output
+                            # Replicate Flux Schnell is FREE (no cost to log)
                             return {
                                 'success': True,
                                 'image_url': image_url,
@@ -1145,6 +1189,7 @@ def generate_with_huggingface(prompt, negative_prompt='', dimensions={}):
         with open(filepath, 'wb') as f:
             f.write(response.content)
         
+        # Hugging Face is FREE (no cost to log)
         return {
             'success': True,
             'image_url': f'/generated_images/{filename}',
@@ -1601,3 +1646,49 @@ def colorize_image(image_path):
     except Exception as e:
         print(f"Colorization error: {str(e)}")
         return image_path
+
+
+# ============ ADMIN DASHBOARD - COST MONITORING ============
+
+@app.route('/api/admin/cost-stats', methods=['GET'])
+def get_cost_stats():
+    """Get real-time cost and revenue statistics (admin only)"""
+    try:
+        # Get hourly and daily stats
+        hourly = cost_monitor.get_hourly_stats()
+        daily = cost_monitor.get_daily_stats()
+        
+        # Check for alerts
+        alerts = cost_monitor.check_cost_alerts()
+        
+        # Get cost breakdown
+        breakdown = cost_monitor.get_cost_breakdown('daily')
+        
+        # Get top cost users
+        top_users = cost_monitor.get_user_costs(limit=10)
+        
+        return jsonify({
+            'success': True,
+            'hourly': hourly,
+            'daily': daily,
+            'alerts': alerts,
+            'breakdown': breakdown,
+            'top_users': top_users
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/admin/cost-report', methods=['GET'])
+def get_cost_report():
+    """Generate formatted cost report (admin only)"""
+    try:
+        report = cost_monitor.generate_report()
+        return jsonify({
+            'success': True,
+            'report': report
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+

@@ -5,13 +5,11 @@ requests==2.31.0
 python-dotenv==1.0.0
 gunicorn==21.2.0
 
-# Official AI SDKs (Made optional in code due to Python 3.14 compatibility)
-# openai - Has Pydantic v1 issues with Python 3.14, using REST API instead
-replicate==0.22.0
-
-# Image Processing & Enhancement (Optional - graceful fallback if unavailable)
+# Image Processing & Enhancement
 Pillow==10.1.0
-# opencv and numpy removed - Python 3.14 compatibility issues
 
 # Payment Processing
 stripe==7.8.0
+
+# Note: replicate and openai libraries removed - using REST APIs directly instead
+# This avoids Python 3.13+ compatibility issues with pydantic v1

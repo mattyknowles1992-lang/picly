@@ -16,6 +16,7 @@ import time
 from cost_monitor import cost_monitor
 from rating_system import rating_system
 from analytics_system import analytics_system
+from quality_optimizer import quality_optimizer
 
 # Image enhancement libraries
 try:
@@ -776,6 +777,14 @@ def submit_rating():
             time_to_rate=time_to_rate
         )
         
+        # Update quality optimizer with rating data
+        if result.get('success'):
+            quality_optimizer.update_rating_performance(
+                generation_id=generation_id,
+                rating=rating,
+                quality_score=quality_score or (rating * 20)  # Convert 5-star to 100 scale
+            )
+        
         return jsonify(result)
         
     except Exception as e:
@@ -902,6 +911,57 @@ def get_analytics_dashboard():
         return jsonify({
             'success': True,
             'data': dashboard
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/optimizer/recommend', methods=['POST'])
+def get_optimal_recommendation():
+    """Get AI-powered engine recommendation for a prompt"""
+    try:
+        data = request.json
+        prompt = data.get('prompt')
+        
+        if not prompt:
+            return jsonify({'success': False, 'error': 'Prompt required'}), 400
+        
+        recommendation = quality_optimizer.get_optimal_engine(prompt)
+        
+        return jsonify({
+            'success': True,
+            'recommendation': recommendation
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/optimizer/engine-comparison', methods=['GET'])
+def get_engine_comparison():
+    """Get comparative analysis of all engines"""
+    try:
+        comparison = quality_optimizer.get_engine_comparison()
+        
+        return jsonify({
+            'success': True,
+            'engines': comparison
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/optimizer/category-insights', methods=['GET'])
+def get_category_insights():
+    """Get insights about best engines per category"""
+    try:
+        insights = quality_optimizer.get_category_insights()
+        
+        return jsonify({
+            'success': True,
+            'categories': insights
         })
         
     except Exception as e:
@@ -1258,6 +1318,25 @@ def generate_image():
                 engine=result.get('engine', 'unknown'),
                 model_version=result.get('quality_tier', 'standard'),
                 session_id=session_token
+            )
+            
+            # Log performance metrics for quality optimization
+            generation_time = result.get('generation_time', 0)
+            api_cost = result.get('api_cost', 0)
+            settings = {
+                'quality_boost': quality_boost,
+                'post_process': post_process,
+                'upscale': upscale,
+                'dimensions': dimensions
+            }
+            
+            quality_optimizer.log_generation_performance(
+                generation_id=generation_id,
+                engine=result.get('engine', 'unknown'),
+                settings=settings,
+                prompt=prompt,
+                generation_time=generation_time,
+                cost=api_cost
             )
         
         return jsonify(result)

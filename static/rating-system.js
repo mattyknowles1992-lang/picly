@@ -241,7 +241,7 @@ class RatingSystem {
     }
 
     /**
-     * Get AI-powered prompt suggestions
+     * Get AI-powered prompt suggestions based on top performers
      */
     async getPromptSuggestions(engine = 'flux-pro', limit = 5) {
         try {
@@ -250,6 +250,38 @@ class RatingSystem {
             return data.suggestions || [];
         } catch (error) {
             console.error('Error getting suggestions:', error);
+            return [];
+        }
+    }
+
+    /**
+     * Get optimal engine recommendation for a prompt
+     */
+    async getOptimalEngine(prompt) {
+        try {
+            const response = await fetch('/api/optimizer/recommend', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ prompt })
+            });
+            const data = await response.json();
+            return data.recommendation || null;
+        } catch (error) {
+            console.error('Error getting recommendation:', error);
+            return null;
+        }
+    }
+
+    /**
+     * Get engine performance comparison
+     */
+    async getEngineComparison() {
+        try {
+            const response = await fetch('/api/optimizer/engine-comparison');
+            const data = await response.json();
+            return data.engines || [];
+        } catch (error) {
+            console.error('Error getting comparison:', error);
             return [];
         }
     }
@@ -269,6 +301,36 @@ class RatingSystem {
             console.error('Error getting top prompts:', error);
             return [];
         }
+    }
+
+    /**
+     * Show AI recommendation badge on prompt input
+     */
+    async showPromptRecommendation(promptInput) {
+        const prompt = promptInput.value.trim();
+        if (prompt.length < 10) return;
+
+        const recommendation = await this.getOptimalEngine(prompt);
+        if (!recommendation) return;
+
+        // Create or update recommendation badge
+        let badge = document.querySelector('.ai-recommendation-badge');
+        if (!badge) {
+            badge = document.createElement('div');
+            badge.className = 'ai-recommendation-badge';
+            promptInput.parentElement.appendChild(badge);
+        }
+
+        const confidence = Math.round(recommendation.confidence * 100);
+        badge.innerHTML = `
+            <span class="badge-icon">🤖</span>
+            <span class="badge-text">
+                <strong>AI Suggests:</strong> ${recommendation.engine} 
+                (${confidence}% confidence)
+            </span>
+            <span class="badge-reason">${recommendation.reason}</span>
+        `;
+        badge.style.display = 'flex';
     }
 }
 

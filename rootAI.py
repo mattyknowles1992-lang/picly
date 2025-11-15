@@ -110,51 +110,73 @@ SUBSCRIPTION_PLANS = {
         'prize_chance': 0.20,
         'prize_tokens': 20,
     },
+    'user': {
+        'price': 9.99,
+        'currency': 'GBP',
+        'name': 'User',
+        'images_free': 'unlimited',  # Flux/SDXL (£0 API cost)
+        'tokens_monthly': 1050,  # £8.40 token value
+        'videos_monthly': 21,  # 21x 8s videos included (1050 tokens worth)
+        'features': [
+            'Unlimited Flux Schnell & SDXL images',
+            '1050 tokens/month OR 21 videos (8s)',
+            'Mix & match: videos, DALL-E, SDXL',
+            'Commercial use license',
+            'No watermark',
+            'Priority queue',
+            'HD downloads'
+        ],
+        'recommended_use': '15 videos (8s) + 20 DALL-E HD + 50 SDXL',
+        'api_cost_estimate': 6.99,  # £6.99 (15 videos @ £0.32 + 20 DALL-E @ £0.064 + 50 SDXL @ £0.0024)
+        'profit_margin': 0.30  # 30% exactly
+    },
     'creator': {
-        'price': 6.99,
+        'price': 17.99,
         'currency': 'GBP',
         'name': 'Creator',
         'images_free': 'unlimited',  # Flux/SDXL
-        'tokens_monthly': 120,
-        'recommended_use': '60 SDXL images + 4 videos (5s)',
-        'api_cost_estimate': 5.04,  # £5.04
-        'profit_margin': 0.28  # 28%
-    },
-    'pro': {
-        'price': 15.99,
-        'currency': 'GBP',
-        'name': 'Pro',
-        'images_free': 'unlimited',
-        'tokens_monthly': 300,
-        'recommended_use': '25 DALL-E HD + 50 SDXL + 6 videos (8s)',
-        'api_cost_estimate': 10.95,  # £10.95
-        'profit_margin': 0.32  # 32%
-    },
-    'business': {
-        'price': 29.99,
-        'currency': 'GBP',
-        'name': 'Business',
-        'images_free': 'unlimited',  # Flux/SDXL
-        'tokens_monthly': 800,  # £6.40 value
-        'dalle_monthly': 50,  # 50 DALL-E HD images included
-        'videos_monthly': 20,  # 20x 8s videos included
+        'tokens_monthly': 1950,  # £15.60 token value
+        'videos_monthly': 39,  # 39x 8s videos included (1950 tokens worth)
         'features': [
             'Unlimited Flux Schnell & SDXL images',
-            '800 tokens/month (£6.40 value)',
-            '50 DALL-E 3 HD images (600 tokens worth)',
-            '20 videos 8-second (1000 tokens worth)',
-            '20% discount on additional tokens',
+            '1950 tokens/month OR 39 videos (8s)',
+            'Mix & match: videos, DALL-E, SDXL',
+            '15% discount on token purchases',
+            'Commercial use license',
             'Priority generation queue',
-            'API access',
-            'Commercial license',
-            'Remove watermark',
+            'API access (coming soon)',
             'Batch generation',
-            'Custom branding'
+            'Custom watermark',
+            'HD downloads'
         ],
-        'total_token_value': 1600,  # 800 + 600 + 1000 (if all features used as tokens)
-        'recommended_use': '150 SDXL + 30 DALL-E HD + 15 videos (8s)',
-        'api_cost_estimate': 20.49,  # £20.49 (realistic usage)
-        'profit_margin': 0.32  # 32%
+        'recommended_use': '30 videos (8s) + 30 DALL-E HD + 100 SDXL',
+        'api_cost_estimate': 12.59,  # £12.59 (30 videos @ £0.32 + 30 DALL-E @ £0.064 + 100 SDXL @ £0.0024)
+        'profit_margin': 0.30  # 30% exactly
+    },
+    'pro': {
+        'price': 32.00,
+        'currency': 'GBP',
+        'name': 'Pro',
+        'images_free': 'unlimited',  # Flux/SDXL
+        'tokens_monthly': 3500,  # £28.00 token value
+        'videos_monthly': 70,  # 70x 8s videos included (3500 tokens worth)
+        'features': [
+            'Unlimited Flux Schnell & SDXL images',
+            '3500 tokens/month OR 70 videos (8s)',
+            'Mix & match: videos, DALL-E, SDXL',
+            '20% discount on token purchases',
+            'Priority generation queue (fastest)',
+            'API access with higher rate limits',
+            'Commercial license (unlimited use)',
+            'Remove all watermarks',
+            'Batch generation (up to 50 at once)',
+            'Custom branding/watermark',
+            'Dedicated support',
+            'Early access to new features'
+        ],
+        'recommended_use': '50 videos (8s) + 50 DALL-E HD + 200 SDXL',
+        'api_cost_estimate': 22.40,  # £22.40 (50 videos @ £0.32 + 50 DALL-E @ £0.064 + 200 SDXL @ £0.0024)
+        'profit_margin': 0.30  # 30% exactly
     },
 }
 

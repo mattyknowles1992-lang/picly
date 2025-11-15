@@ -34,6 +34,10 @@ try:
     import replicate
 except (ImportError, Exception):
     replicate = None
+try:
+    import stripe
+except ImportError:
+    stripe = None
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend requests
@@ -43,6 +47,21 @@ CONFIG = {
     'OPENAI_API_KEY': os.getenv('OPENAI_API_KEY', 'your-openai-key-here'),
     'STABILITY_API_KEY': os.getenv('STABILITY_API_KEY', 'your-stability-key-here'),
     'REPLICATE_API_KEY': os.getenv('REPLICATE_API_KEY', 'your-replicate-key-here'),
+    'STRIPE_SECRET_KEY': os.getenv('STRIPE_SECRET_KEY', 'your-stripe-secret-key-here'),
+    'STRIPE_PUBLISHABLE_KEY': os.getenv('STRIPE_PUBLISHABLE_KEY', 'your-stripe-publishable-key-here'),
+    'STRIPE_WEBHOOK_SECRET': os.getenv('STRIPE_WEBHOOK_SECRET', 'your-webhook-secret-here'),
+}
+
+# Initialize Stripe
+if stripe and CONFIG['STRIPE_SECRET_KEY'] != 'your-stripe-secret-key-here':
+    stripe.api_key = CONFIG['STRIPE_SECRET_KEY']
+
+# Credit Packages (50% profit margin)
+CREDIT_PACKAGES = {
+    'starter': {'credits': 10, 'price': 0.80, 'name': 'Starter'},
+    'popular': {'credits': 50, 'price': 3.50, 'name': 'Popular', 'bonus': 0},
+    'pro': {'credits': 100, 'price': 6.00, 'name': 'Pro', 'bonus': 0},
+    'creator': {'credits': 500, 'price': 25.00, 'name': 'Creator', 'bonus': 0},
 }
 
 # ⚠️ IMPORTANT: Replace the placeholder keys above with your actual API keys
@@ -174,6 +193,212 @@ def require_auth(f):
 # ============ END AUTHENTICATION ROUTES ============
 
 
+# ============ CREDIT & PAYMENT ROUTES ============
+
+@app.route('/api/credits/balance', methods=['GET'])
+def get_credit_balance():
+    """Get user's current credit balance"""
+    try:
+        session_token = request.cookies.get('session_token')
+        
+        if not session_token:
+            # Return anonymous user state
+            return jsonify({
+                'success': True,
+                'premium_credits': 0,
+                'free_credits': 10,
+                'anonymous': True
+            })
+        
+        validation = user_db.validate_session(session_token)
+        if not validation.get('valid'):
+            return jsonify({'success': False, 'error': 'Invalid session'}), 401
+        
+        user_id = validation['user_id']
+        result = user_db.get_user_credits(user_id)
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/credits/packages', methods=['GET'])
+def get_credit_packages():
+    """Get available credit packages for purchase"""
+    return jsonify({
+        'success': True,
+        'packages': CREDIT_PACKAGES,
+        'stripe_publishable_key': CONFIG['STRIPE_PUBLISHABLE_KEY']
+    })
+
+
+@app.route('/api/credits/purchase', methods=['POST'])
+def create_checkout_session():
+    """Create Stripe checkout session for credit purchase"""
+    try:
+        if not stripe:
+            return jsonify({'success': False, 'error': 'Stripe not configured'}), 500
+        
+        session_token = request.cookies.get('session_token')
+        if not session_token:
+            return jsonify({'success': False, 'error': 'Must be logged in to purchase'}), 401
+        
+        validation = user_db.validate_session(session_token)
+        if not validation.get('valid'):
+            return jsonify({'success': False, 'error': 'Invalid session'}), 401
+        
+        user_id = validation['user_id']
+        data = request.json
+        package_id = data.get('package')
+        
+        if package_id not in CREDIT_PACKAGES:
+            return jsonify({'success': False, 'error': 'Invalid package'}), 400
+        
+        package = CREDIT_PACKAGES[package_id]
+        
+        # Create Stripe checkout session
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[{
+                'price_data': {
+                    'currency': 'usd',
+                    'unit_amount': int(package['price'] * 100),  # Convert to cents
+                    'product_data': {
+                        'name': f\"{package['name']} Credit Package\",
+                        'description': f\"{package['credits']} Premium Credits for Ultra-Quality DALL-E 3 HD\",
+                    },
+                },
+                'quantity': 1,
+            }],
+            mode='payment',
+            success_url=request.host_url + 'purchase-success?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url=request.host_url + 'purchase-cancelled',
+            metadata={
+                'user_id': user_id,
+                'package_id': package_id,
+                'credits': package['credits']
+            }
+        )
+        
+        return jsonify({
+            'success': True,
+            'checkout_url': checkout_session.url,
+            'session_id': checkout_session.id
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/stripe/webhook', methods=['POST'])
+def stripe_webhook():
+    """Handle Stripe webhook events (payment confirmation)"""
+    try:
+        if not stripe:
+            return jsonify({'error': 'Stripe not configured'}), 500
+        
+        payload = request.data
+        sig_header = request.headers.get('Stripe-Signature')
+        
+        # Verify webhook signature
+        try:
+            event = stripe.Webhook.construct_event(
+                payload, sig_header, CONFIG['STRIPE_WEBHOOK_SECRET']
+            )
+        except ValueError:
+            return jsonify({'error': 'Invalid payload'}), 400
+        except stripe.error.SignatureVerificationError:
+            return jsonify({'error': 'Invalid signature'}), 400
+        
+        # Handle successful payment
+        if event['type'] == 'checkout.session.completed':
+            session = event['data']['object']
+            
+            user_id = int(session['metadata']['user_id'])
+            credits = int(session['metadata']['credits'])
+            package_id = session['metadata']['package_id']
+            
+            # Add credits to user account
+            result = user_db.add_credits(
+                user_id=user_id,
+                credits=credits,
+                transaction_id=session['payment_intent'],
+                amount=session['amount_total'] / 100  # Convert from cents
+            )
+            
+            print(f"Credits added: {result}")
+        
+        return jsonify({'success': True})
+        
+    except Exception as e:
+        print(f"Webhook error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/referral/apply', methods=['POST'])
+def apply_referral():
+    """Apply referral code to user account"""
+    try:
+        session_token = request.cookies.get('session_token')
+        if not session_token:
+            return jsonify({'success': False, 'error': 'Must be logged in'}), 401
+        
+        validation = user_db.validate_session(session_token)
+        if not validation.get('valid'):
+            return jsonify({'success': False, 'error': 'Invalid session'}), 401
+        
+        user_id = validation['user_id']
+        data = request.json
+        referral_code = data.get('code', '').strip()
+        
+        result = user_db.apply_referral(user_id, referral_code)
+        return jsonify(result)
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/achievements/claim', methods=['POST'])
+def claim_achievement():
+    """Claim achievement credits"""
+    try:
+        session_token = request.cookies.get('session_token')
+        if not session_token:
+            return jsonify({'success': False, 'error': 'Must be logged in'}), 401
+        
+        validation = user_db.validate_session(session_token)
+        if not validation.get('valid'):
+            return jsonify({'success': False, 'error': 'Invalid session'}), 401
+        
+        user_id = validation['user_id']
+        data = request.json
+        achievement_type = data.get('type')
+        
+        # Define achievement rewards
+        achievements = {
+            'first_generation': 5,
+            '10_generations': 10,
+            'social_share': 15,
+            'newsletter_signup': 20,
+            'complete_profile': 10
+        }
+        
+        if achievement_type not in achievements:
+            return jsonify({'success': False, 'error': 'Invalid achievement'}), 400
+        
+        credits = achievements[achievement_type]
+        result = user_db.award_achievement(user_id, achievement_type, credits)
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# ============ END CREDIT & PAYMENT ROUTES ============
+
+
 # ============ IMAGE POST-PROCESSING ENHANCEMENT ============
 
 def enhance_image(image_path, enhancement_level='medium'):
@@ -276,12 +501,14 @@ def serve_static(path):
 def generate_image():
     """
     Generate an image using the specified AI API with advanced quality options
+    FREE TIER: 10 daily credits → Replicate Flux Dev (9.0/10 quality)
+    PREMIUM: Paid credits → DALL-E 3 HD (9.5/10 quality)
     
     Request body:
     {
         "prompt": "your prompt here",
         "negative_prompt": "things to avoid" (optional),
-        "engine": "dalle" | "stability" | "replicate",
+        "quality_tier": "free" | "premium",
         "style": "photorealistic" (optional),
         "dimensions": {"width": 1024, "height": 1024},
         "quality_boost": true/false,
@@ -293,7 +520,7 @@ def generate_image():
         data = request.json
         prompt = data.get('prompt', '')
         negative_prompt = data.get('negative_prompt', '')
-        engine = data.get('engine', 'dalle')
+        quality_tier = data.get('quality_tier', 'free')  # free or premium
         style = data.get('style', '')
         dimensions = data.get('dimensions', {'width': 1024, 'height': 1024})
         quality_boost = data.get('quality_boost', True)
@@ -307,15 +534,78 @@ def generate_image():
         if style:
             prompt = f"{prompt}, {style}"
         
-        # Route to appropriate API
-        if engine == 'dalle':
+        # Check credits and route accordingly
+        session_token = request.cookies.get('session_token')
+        user_id = None
+        
+        if session_token:
+            validation = user_db.validate_session(session_token)
+            if validation.get('valid'):
+                user_id = validation['user_id']
+        
+        # Determine which engine to use based on credits
+        if quality_tier == 'premium':
+            # Premium tier requires login and credits
+            if not user_id:
+                return jsonify({
+                    'success': False,
+                    'error': 'Please log in to use premium quality',
+                    'require_login': True
+                }), 401
+            
+            credits = user_db.get_user_credits(user_id)
+            if not credits.get('success'):
+                return jsonify({'success': False, 'error': 'Could not check credits'}), 500
+            
+            if credits['premium_credits'] < 1:
+                return jsonify({
+                    'success': False,
+                    'error': 'Insufficient premium credits',
+                    'require_purchase': True
+                }), 402  # Payment Required
+            
+            # Use DALL-E 3 HD for premium
             result = generate_with_dalle(prompt, dimensions, quality_boost)
-        elif engine == 'stability':
-            result = generate_with_stability(prompt, negative_prompt, dimensions, quality_boost)
-        elif engine == 'replicate':
-            result = generate_with_replicate(prompt, negative_prompt, dimensions, quality_boost)
+            
+            if result.get('success'):
+                # Deduct premium credit
+                user_db.use_credit(user_id, 'premium')
+                result['credits_used'] = 'premium'
+                result['quality_tier'] = 'DALL-E 3 HD (9.5/10)'
+                
+                # Award first generation achievement
+                if credits.get('total_generations', 0) == 0:
+                    user_db.award_achievement(user_id, 'first_generation', 5)
+                elif credits.get('total_generations', 0) == 9:
+                    user_db.award_achievement(user_id, '10_generations', 10)
+        
         else:
-            return jsonify({'error': f'Unknown engine: {engine}'}), 400
+            # Free tier
+            if user_id:
+                # Logged in user - check daily free credits
+                credits = user_db.get_user_credits(user_id)
+                if credits.get('free_credits', 0) < 1:
+                    return jsonify({
+                        'success': False,
+                        'error': 'Daily free credits exhausted. Upgrade to premium or wait until tomorrow.',
+                        'require_purchase': True
+                    }), 402
+                
+                # Use Replicate Flux Dev for free tier
+                result = generate_with_replicate(prompt, negative_prompt, dimensions, quality_boost)
+                
+                if result.get('success'):
+                    # Deduct free credit
+                    user_db.use_credit(user_id, 'free')
+                    result['credits_used'] = 'free'
+                    result['quality_tier'] = 'Flux Dev (9.0/10)'
+            else:
+                # Anonymous user - limited to 10 per day (IP-based limiting would go here)
+                result = generate_with_replicate(prompt, negative_prompt, dimensions, quality_boost)
+                if result.get('success'):
+                    result['credits_used'] = 'anonymous'
+                    result['quality_tier'] = 'Flux Dev (9.0/10)'
+                    result['message'] = 'Sign up for 10 free daily generations!'
         
         # Apply post-processing if enabled and generation was successful
         if result.get('success') and post_process:

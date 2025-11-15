@@ -26,8 +26,15 @@ class UserDatabase:
                 email TEXT UNIQUE NOT NULL,
                 password_hash TEXT NOT NULL,
                 salt TEXT NOT NULL,
+                premium_credits INTEGER DEFAULT 0,
+                free_credits_today INTEGER DEFAULT 10,
+                last_free_reset DATE,
+                referral_code TEXT UNIQUE,
+                referred_by INTEGER,
+                total_generations INTEGER DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                last_login TIMESTAMP
+                last_login TIMESTAMP,
+                FOREIGN KEY (referred_by) REFERENCES users (id)
             )
         ''')
         
@@ -39,6 +46,42 @@ class UserDatabase:
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 expires_at TIMESTAMP NOT NULL,
                 FOREIGN KEY (user_id) REFERENCES users (id)
+            )
+        ''')
+        
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS transactions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                stripe_payment_id TEXT,
+                amount REAL NOT NULL,
+                credits INTEGER NOT NULL,
+                status TEXT DEFAULT 'pending',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id)
+            )
+        ''')
+        
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS achievements (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                achievement_type TEXT NOT NULL,
+                credits_awarded INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_id) REFERENCES users (id),
+                UNIQUE(user_id, achievement_type)
+            )
+        ''')
+        
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS daily_stats (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                date DATE NOT NULL UNIQUE,
+                total_generations INTEGER DEFAULT 0,
+                free_generations INTEGER DEFAULT 0,
+                premium_generations INTEGER DEFAULT 0,
+                revenue REAL DEFAULT 0
             )
         ''')
         
@@ -73,14 +116,17 @@ class UserDatabase:
             # Hash password
             password_hash, salt = self.hash_password(password)
             
+            # Generate unique referral code
+            referral_code = secrets.token_urlsafe(8)
+            
             # Insert into database
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
             
             cursor.execute('''
-                INSERT INTO users (username, email, password_hash, salt)
-                VALUES (?, ?, ?, ?)
-            ''', (username, email, password_hash, salt))
+                INSERT INTO users (username, email, password_hash, salt, referral_code, last_free_reset)
+                VALUES (?, ?, ?, ?, ?, DATE('now'))
+            ''', (username, email, password_hash, salt, referral_code))
             
             conn.commit()
             user_id = cursor.lastrowid
@@ -223,5 +269,175 @@ class UserDatabase:
             
             return {'success': True, 'deleted': deleted}
             
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
+    
+    def get_user_credits(self, user_id):
+        """Get user's credit balance (resets daily free credits)"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            # Check if daily free credits need reset
+            cursor.execute('''
+                SELECT premium_credits, free_credits_today, last_free_reset,
+                       referral_code, total_generations
+                FROM users WHERE id = ?
+            ''', (user_id,))
+            
+            result = cursor.fetchone()
+            if not result:
+                conn.close()
+                return {'success': False, 'error': 'User not found'}
+            
+            premium, free, last_reset, ref_code, total_gens = result
+            
+            # Reset daily free credits if new day
+            from datetime import date
+            today = str(date.today())
+            
+            if last_reset != today:
+                free = 10  # Reset to 10 free credits
+                cursor.execute('''
+                    UPDATE users 
+                    SET free_credits_today = 10, last_free_reset = DATE('now')
+                    WHERE id = ?
+                ''', (user_id,))
+                conn.commit()
+            
+            conn.close()
+            
+            return {
+                'success': True,
+                'premium_credits': premium,
+                'free_credits': free,
+                'referral_code': ref_code,
+                'total_generations': total_gens
+            }
+            
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
+    
+    def use_credit(self, user_id, credit_type='free'):
+        """Deduct one credit from user (free or premium)"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            if credit_type == 'free':
+                cursor.execute('''
+                    UPDATE users 
+                    SET free_credits_today = free_credits_today - 1,
+                        total_generations = total_generations + 1
+                    WHERE id = ? AND free_credits_today > 0
+                ''', (user_id,))
+            else:  # premium
+                cursor.execute('''
+                    UPDATE users 
+                    SET premium_credits = premium_credits - 1,
+                        total_generations = total_generations + 1
+                    WHERE id = ? AND premium_credits > 0
+                ''', (user_id,))
+            
+            if cursor.rowcount == 0:
+                conn.close()
+                return {'success': False, 'error': 'Insufficient credits'}
+            
+            conn.commit()
+            conn.close()
+            
+            return {'success': True, 'message': 'Credit deducted'}
+            
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
+    
+    def add_credits(self, user_id, credits, transaction_id=None, amount=0):
+        """Add premium credits to user and log transaction"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                UPDATE users SET premium_credits = premium_credits + ?
+                WHERE id = ?
+            ''', (credits, user_id))
+            
+            # Log transaction
+            if transaction_id:
+                cursor.execute('''
+                    INSERT INTO transactions (user_id, stripe_payment_id, amount, credits, status)
+                    VALUES (?, ?, ?, ?, 'completed')
+                ''', (user_id, transaction_id, amount, credits))
+            
+            conn.commit()
+            conn.close()
+            
+            return {'success': True, 'message': f'{credits} credits added'}
+            
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
+    
+    def apply_referral(self, user_id, referral_code):
+        """Apply referral code: Give 10 credits to referrer, 5 to new user"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            # Find referrer
+            cursor.execute('SELECT id FROM users WHERE referral_code = ?', (referral_code,))
+            referrer = cursor.fetchone()
+            
+            if not referrer:
+                conn.close()
+                return {'success': False, 'error': 'Invalid referral code'}
+            
+            referrer_id = referrer[0]
+            
+            # Give 10 credits to referrer
+            cursor.execute('''
+                UPDATE users SET premium_credits = premium_credits + 10
+                WHERE id = ?
+            ''', (referrer_id,))
+            
+            # Give 5 extra credits to new user
+            cursor.execute('''
+                UPDATE users 
+                SET premium_credits = premium_credits + 5,
+                    free_credits_today = free_credits_today + 5,
+                    referred_by = ?
+                WHERE id = ?
+            ''', (referrer_id, user_id))
+            
+            conn.commit()
+            conn.close()
+            
+            return {'success': True, 'message': 'Referral applied! +15 total credits'}
+            
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
+    
+    def award_achievement(self, user_id, achievement_type, credits):
+        """Award achievement credits (one-time per achievement)"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                INSERT INTO achievements (user_id, achievement_type, credits_awarded)
+                VALUES (?, ?, ?)
+            ''', (user_id, achievement_type, credits))
+            
+            cursor.execute('''
+                UPDATE users SET premium_credits = premium_credits + ?
+                WHERE id = ?
+            ''', (credits, user_id))
+            
+            conn.commit()
+            conn.close()
+            
+            return {'success': True, 'message': f'Achievement unlocked! +{credits} credits'}
+            
+        except sqlite3.IntegrityError:
+            return {'success': False, 'error': 'Achievement already claimed'}
         except Exception as e:
             return {'success': False, 'error': str(e)}

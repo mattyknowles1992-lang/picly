@@ -146,18 +146,14 @@
                 <!-- Credit Display (shown when logged in) -->
                 <div class="credit-display" id="creditDisplay" style="display: none;">
                     <div class="credit-item">
-                        <span class="credit-icon">⚡</span>
-                        <span id="freeCredits">10</span> Free
-                    </div>
-                    <div class="credit-item premium">
-                        <span class="credit-icon">💎</span>
-                        <span id="premiumCredits">0</span> Premium
+                        <span class="credit-icon">🪙</span>
+                        <span id="totalTokens">10</span> Tokens
                     </div>
                     <div class="credit-item unlimited" id="unlimitedBadge" style="display: none;">
                         <span class="credit-icon">♾️</span>
                         Unlimited
                     </div>
-                    <button class="buy-credits-btn" id="buyCreditsBtn">Buy Credits</button>
+                    <button class="buy-credits-btn" id="buyCreditsBtn">Buy Tokens</button>
                     <button class="nav-btn logout" id="logoutBtn">Logout</button>
                 </div>
             </div>
@@ -215,7 +211,7 @@
     <div id="buyCreditsModal" class="auth-modal">
         <div class="auth-modal-content buy-credits-content">
             <span class="auth-close">&times;</span>
-            <h2>💎 Get More Credits</h2>
+            <h2>🪙 Get More Tokens</h2>
             <p class="modal-subtitle">Choose your plan and start creating unlimited masterpieces</p>
             
             <!-- Credit Packages -->
@@ -281,11 +277,11 @@
             <div class="features-comparison">
                 <h4>What's Included?</h4>
                 <div class="comparison-row">
-                    <span>⚡ Free Tier: Flux Dev (9.0/10 quality)</span>
+                    <span>🎨 Free Tier: Flux Dev (9.0/10 quality)</span>
                     <span>10 free daily</span>
                 </div>
                 <div class="comparison-row">
-                    <span>💎 Premium: DALL-E 3 HD (9.5/10 quality)</span>
+                    <span>✨ Premium: DALL-E 3 HD (9.5/10 quality)</span>
                     <span>Pay-per-use</span>
                 </div>
                 <div class="comparison-row">
@@ -357,8 +353,8 @@
                     <div class="controls-grid">
                         <!-- Quality Tier Selector -->
                         <select id="qualityTier" class="quality-tier-select">
-                            <option value="free">⚡ Free Tier - Flux Dev (9.0/10)</option>
-                            <option value="premium">💎 Premium - DALL-E 3 HD (9.5/10)</option>
+                            <option value="free">🎨 Free Tier - Flux Dev (9.0/10)</option>
+                            <option value="premium">✨ Premium - DALL-E 3 HD (9.5/10)</option>
                         </select>
 
                         <!-- Style Selector -->
@@ -377,7 +373,7 @@
                         <!-- Engine Selector -->
                         <select id="engineSelect">
                             <option value="dalle">🎨 DALL-E 3 (Best for natural language)</option>
-                            <option value="stability">⚡ Stability AI (Customizable)</option>
+                            <option value="stability">🎨 Stability AI (Customizable)</option>
                             <option value="replicate">🔥 Flux (Highest quality)</option>
                         </select>
 
@@ -553,7 +549,7 @@
                     <div class="controls-grid">
                         <select id="editEngine">
                             <option value="dalle">🎨 DALL-E (Best for editing)</option>
-                            <option value="stability">⚡ Stability AI (Advanced)</option>
+                            <option value="stability">🎨 Stability AI (Advanced)</option>
                         </select>
 
                         <label class="checkbox-label">

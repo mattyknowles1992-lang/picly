@@ -252,10 +252,10 @@ async function updateCredits() {
         
         if (response.ok) {
             const data = await response.json();
-            const creditCountElement = document.getElementById('creditCount');
-            if (creditCountElement) {
-                const totalCredits = (data.free_credits || 0) + (data.premium_credits || 0);
-                creditCountElement.textContent = totalCredits;
+            const totalTokensElement = document.getElementById('totalTokens');
+            if (totalTokensElement) {
+                const totalTokens = (data.free_credits || 0) + (data.premium_credits || 0);
+                totalTokensElement.textContent = totalTokens;
             }
         }
     } catch (error) {
@@ -1486,9 +1486,14 @@ async function checkCredits() {
         const data = await response.json();
         
         if (data.success) {
-            // Update credit display
-            document.getElementById('freeCredits').textContent = data.free_credits || 0;
-            document.getElementById('premiumCredits').textContent = data.premium_credits || 0;
+            // Calculate total tokens
+            const totalTokens = (data.free_credits || 0) + (data.premium_credits || 0);
+            
+            // Update token display
+            const totalTokensElement = document.getElementById('totalTokens');
+            if (totalTokensElement) {
+                totalTokensElement.textContent = totalTokens;
+            }
             
             // Show unlimited badge if user has subscription
             const unlimitedBadge = document.getElementById('unlimitedBadge');

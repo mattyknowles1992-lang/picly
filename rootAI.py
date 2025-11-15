@@ -374,14 +374,20 @@ def generate_with_dalle(prompt, dimensions={}, quality_boost=True):
     else:
         size = '1024x1792'
     
-    quality = 'hd' if quality_boost else 'standard'
+    # ALWAYS use HD quality for best results (industry standard)
+    quality = 'hd'
+    
+    # Style: 'vivid' for hyper-real and dramatic images (recommended)
+    # or 'natural' for more natural, less hyper-real images
+    style_mode = 'vivid' if quality_boost else 'natural'
     
     payload = {
         "model": "dall-e-3",
         "prompt": prompt,
         "n": 1,
         "size": size,
-        "quality": quality
+        "quality": quality,
+        "style": style_mode  # New parameter for better quality
     }
     
     try:
@@ -428,9 +434,9 @@ def generate_with_stability(prompt, negative_prompt='', dimensions={}, quality_b
     if negative_prompt:
         text_prompts.append({"text": negative_prompt, "weight": -1})
     
-    # Quality settings
-    steps = 50 if quality_boost else 30  # More steps = higher quality
-    cfg_scale = 8 if quality_boost else 7  # Higher CFG = more prompt adherence
+    # Quality settings (optimized for best results)
+    steps = 60 if quality_boost else 40  # More steps = higher quality (industry best: 50-80)
+    cfg_scale = 9 if quality_boost else 7.5  # Higher CFG = more prompt adherence (sweet spot: 7-10)
     
     payload = {
         "text_prompts": text_prompts,
@@ -439,7 +445,8 @@ def generate_with_stability(prompt, negative_prompt='', dimensions={}, quality_b
         "width": dimensions.get('width', 1024),
         "steps": steps,
         "samples": 1,
-        "sampler": "K_DPM_2_ANCESTRAL"  # High-quality sampler
+        "sampler": "K_DPM_2_ANCESTRAL",  # High-quality sampler
+        "clip_guidance_preset": "FAST_BLUE" if quality_boost else "NONE"  # Enhanced detail
     }
     
     response = requests.post(url, headers=headers, json=payload)

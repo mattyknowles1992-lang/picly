@@ -953,76 +953,128 @@ def generate_with_replicate(prompt, negative_prompt='', dimensions={}, quality_b
         "input": input_params
     }
     
-    try:
-        response = requests.post(url, headers=headers, json=payload, timeout=60)
-        response.raise_for_status()
-        
-        prediction = response.json()
-        
-        # If prediction is already complete (Prefer: wait), return immediately
-        if prediction.get('status') == 'succeeded' and prediction.get('output'):
-            return {
-                'success': True,
-                'image_url': prediction['output'][0] if isinstance(prediction['output'], list) else prediction['output'],
-                'engine': 'Flux Schnell'
-            }
-        
-        # Otherwise poll for completion
-        prediction_id = prediction.get('id')
-        if not prediction_id:
-            return {
-                'success': False,
-                'error': 'No prediction ID returned from API'
-            }
-        
-        # Poll for completion (max 30 seconds for Schnell)
-        max_attempts = 30
-        for attempt in range(max_attempts):
-            status_response = requests.get(
-                f"https://api.replicate.com/v1/predictions/{prediction_id}",
-                headers={"Authorization": f"Token {api_key}"},
-                timeout=10
-            )
-            status_data = status_response.json()
+    # Retry logic with exponential backoff for rate limits
+    max_retries = 3
+    retry_delay = 2
+    
+    for retry in range(max_retries):
+        try:
+            response = requests.post(url, headers=headers, json=payload, timeout=60)
             
-            if status_data.get('status') == 'succeeded':
-                output = status_data.get('output')
-                if output:
-                    image_url = output[0] if isinstance(output, list) else output
+            # Handle rate limiting
+            if response.status_code == 429:
+                if retry < max_retries - 1:
+                    wait_time = retry_delay * (2 ** retry)  # Exponential backoff
+                    print(f"Rate limited. Waiting {wait_time} seconds before retry {retry + 1}/{max_retries}...")
+                    time.sleep(wait_time)
+                    continue
+                else:
                     return {
-                        'success': True,
-                        'image_url': image_url,
-                        'engine': 'Flux Schnell'
+                        'success': False,
+                        'error': 'Rate limit exceeded. Please wait a moment and try again.',
+                        'rate_limited': True
                     }
-            elif status_data.get('status') == 'failed':
-                error_detail = status_data.get('error', 'Unknown error')
+            
+            response.raise_for_status()
+            prediction = response.json()
+            
+            # If prediction is already complete (Prefer: wait), return immediately
+            if prediction.get('status') == 'succeeded' and prediction.get('output'):
                 return {
-                    'success': False,
-                    'error': f'Generation failed: {error_detail}'
+                    'success': True,
+                    'image_url': prediction['output'][0] if isinstance(prediction['output'], list) else prediction['output'],
+                    'engine': 'Flux Schnell'
                 }
             
-            time.sleep(1)
-        
-        return {
-            'success': False,
-            'error': 'Generation timeout after 30 seconds'
-        }
-        
-    except requests.Timeout:
-        return {
-            'success': False,
-            'error': 'Request timeout - please try again'
-        }
-    except requests.RequestException as e:
-        return {
-            'success': False,
-            'error': f'API request failed: {str(e)}'
-        }
-    except Exception as e:
-        return {
-            'success': False,
-            'error': f'Unexpected error: {str(e)}'
-        }
+            # Otherwise poll for completion
+            prediction_id = prediction.get('id')
+            if not prediction_id:
+                return {
+                    'success': False,
+                    'error': 'No prediction ID returned from API'
+                }
+            
+            # Poll for completion (max 30 seconds for Schnell)
+            max_attempts = 30
+            for attempt in range(max_attempts):
+                try:
+                    status_response = requests.get(
+                        f"https://api.replicate.com/v1/predictions/{prediction_id}",
+                        headers={"Authorization": f"Token {api_key}"},
+                        timeout=10
+                    )
+                    
+                    # Handle rate limiting during polling
+                    if status_response.status_code == 429:
+                        time.sleep(2)
+                        continue
+                    
+                    status_data = status_response.json()
+                    
+                    if status_data.get('status') == 'succeeded':
+                        output = status_data.get('output')
+                        if output:
+                            image_url = output[0] if isinstance(output, list) else output
+                            return {
+                                'success': True,
+                                'image_url': image_url,
+                                'engine': 'Flux Schnell'
+                            }
+                    elif status_data.get('status') == 'failed':
+                        error_detail = status_data.get('error', 'Unknown error')
+                        return {
+                            'success': False,
+                            'error': f'Generation failed: {error_detail}'
+                        }
+                    
+                    time.sleep(1)
+                except requests.RequestException:
+                    # If polling fails, wait and continue
+                    time.sleep(2)
+                    continue
+            
+            return {
+                'success': False,
+                'error': 'Generation timeout after 30 seconds'
+            }
+            
+        except requests.Timeout:
+            if retry < max_retries - 1:
+                time.sleep(retry_delay)
+                continue
+            return {
+                'success': False,
+                'error': 'Request timeout - please try again'
+            }
+        except requests.RequestException as e:
+            error_msg = str(e)
+            if '429' in error_msg or 'Too Many Requests' in error_msg:
+                if retry < max_retries - 1:
+                    wait_time = retry_delay * (2 ** retry)
+                    time.sleep(wait_time)
+                    continue
+                return {
+                    'success': False,
+                    'error': 'Rate limit exceeded. Please wait 30 seconds and try again.',
+                    'rate_limited': True
+                }
+            if retry < max_retries - 1:
+                time.sleep(retry_delay)
+                continue
+            return {
+                'success': False,
+                'error': f'API request failed: {error_msg}'
+            }
+        except Exception as e:
+            return {
+                'success': False,
+                'error': f'Unexpected error: {str(e)}'
+            }
+    
+    return {
+        'success': False,
+        'error': 'Maximum retries exceeded. Please try again later.'
+    }
 
 
 @app.route('/generated_images/<filename>')

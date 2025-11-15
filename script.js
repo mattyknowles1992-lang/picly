@@ -932,6 +932,17 @@ async function generateImage() {
             if (data.revised_prompt && data.revised_prompt !== promptInput.value) {
                 console.log('Enhanced prompt:', data.revised_prompt);
             }
+        } else if (data.rate_limited) {
+            // Rate limit error
+            generatedImage.innerHTML = `
+                <div style="width: 100%; height: 400px; background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; padding: 20px; text-align: center;">
+                    <div style="font-size: 4rem; margin-bottom: 20px;">⏱️</div>
+                    <p style="font-size: 1.2rem; font-weight: 600; margin-bottom: 10px;">Rate Limit Reached</p>
+                    <p style="font-size: 0.9rem; opacity: 0.9; max-width: 400px;">${data.error}</p>
+                    <p style="font-size: 0.85rem; opacity: 0.8; max-width: 400px; margin-top: 15px;">💡 Tip: Sign up for unlimited generations at $29/month</p>
+                </div>
+            `;
+            showNotification('Rate limit - please wait and try again', 'warning');
         } else if (data.demo) {
             // Show demo message if API keys not configured
             generatedImage.innerHTML = `
@@ -943,6 +954,28 @@ async function generateImage() {
                 </div>
             `;
             showNotification('Add your API keys to enable generation');
+        } else if (data.require_login) {
+            // Login required for premium
+            generatedImage.innerHTML = `
+                <div style="width: 100%; height: 400px; background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; padding: 20px; text-align: center;">
+                    <div style="font-size: 4rem; margin-bottom: 20px;">🔐</div>
+                    <p style="font-size: 1.2rem; font-weight: 600; margin-bottom: 10px;">Login Required</p>
+                    <p style="font-size: 0.9rem; opacity: 0.9; max-width: 400px;">${data.error}</p>
+                    <button onclick="document.getElementById('loginBtn').click()" style="margin-top: 20px; padding: 12px 24px; background: white; color: #8b5cf6; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Sign In</button>
+                </div>
+            `;
+            showNotification('Please log in to use premium features');
+        } else if (data.require_purchase) {
+            // Need to buy credits
+            generatedImage.innerHTML = `
+                <div style="width: 100%; height: 400px; background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; padding: 20px; text-align: center;">
+                    <div style="font-size: 4rem; margin-bottom: 20px;">💎</div>
+                    <p style="font-size: 1.2rem; font-weight: 600; margin-bottom: 10px;">Credits Needed</p>
+                    <p style="font-size: 0.9rem; opacity: 0.9; max-width: 400px;">${data.error}</p>
+                    <button onclick="document.querySelector('.buy-credits-btn')?.click()" style="margin-top: 20px; padding: 12px 24px; background: white; color: #ec4899; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Buy Credits</button>
+                </div>
+            `;
+            showNotification('Purchase credits to continue generating');
         } else {
             throw new Error(data.error || 'Generation failed');
         }

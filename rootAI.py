@@ -17,6 +17,7 @@ from cost_monitor import cost_monitor
 from rating_system import rating_system
 from analytics_system import analytics_system
 from quality_optimizer import quality_optimizer
+from autonomous_learner import autonomous_learner
 
 # Image enhancement libraries
 try:
@@ -968,6 +969,188 @@ def get_category_insights():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+# ============ AUTONOMOUS LEARNING ROUTES ============
+
+@app.route('/api/learning/enhance-prompt', methods=['POST'])
+def enhance_prompt_with_learning():
+    """Get AI-powered prompt enhancement suggestions based on learned patterns"""
+    try:
+        data = request.get_json()
+        user_prompt = data.get('prompt', '')
+        
+        if not user_prompt:
+            return jsonify({'success': False, 'error': 'Prompt required'}), 400
+        
+        # Get enhancement suggestions from autonomous learner
+        suggestions = autonomous_learner.get_prompt_enhancement_suggestions(user_prompt)
+        
+        # Build enhanced prompt
+        enhanced_parts = [user_prompt]
+        
+        # Add top quality modifiers
+        if suggestions['quality_modifiers']:
+            top_modifiers = [m['term'] for m in suggestions['quality_modifiers'][:3]]
+            enhanced_parts.extend(top_modifiers)
+        
+        # Add trending patterns
+        if suggestions['trending_additions']:
+            trending = suggestions['trending_additions'][0]['pattern']
+            enhanced_parts.append(trending)
+        
+        enhanced_prompt = ', '.join(enhanced_parts)
+        
+        return jsonify({
+            'success': True,
+            'original_prompt': user_prompt,
+            'enhanced_prompt': enhanced_prompt,
+            'suggestions': suggestions,
+            'improvements': {
+                'quality_boost': len(suggestions['quality_modifiers']),
+                'style_options': len(suggestions['style_suggestions']),
+                'trending_applied': len(suggestions['trending_additions']) > 0
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/learning/stats', methods=['GET'])
+def get_learning_stats():
+    """Get statistics about autonomous learning progress"""
+    try:
+        stats = autonomous_learner.get_learning_stats()
+        
+        return jsonify({
+            'success': True,
+            'stats': stats,
+            'status': 'active' if autonomous_learner.learning_active else 'stopped'
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/learning/control', methods=['POST'])
+def control_learning():
+    """Start or stop autonomous learning"""
+    try:
+        data = request.get_json()
+        action = data.get('action', 'start')
+        
+        if action == 'start':
+            autonomous_learner.start_autonomous_learning()
+            return jsonify({
+                'success': True,
+                'message': 'Autonomous learning started',
+                'status': 'active'
+            })
+        elif action == 'stop':
+            autonomous_learner.stop_autonomous_learning()
+            return jsonify({
+                'success': True,
+                'message': 'Autonomous learning stopped',
+                'status': 'stopped'
+            })
+        else:
+            return jsonify({'success': False, 'error': 'Invalid action'}), 400
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/learning/trending', methods=['GET'])
+def get_trending_patterns():
+    """Get currently trending prompt patterns"""
+    try:
+        import sqlite3
+        conn = sqlite3.connect('learning.db')
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            SELECT pattern_text, trend_score, source_count, last_seen
+            FROM trending_patterns
+            WHERE last_seen >= datetime('now', '-7 days')
+            ORDER BY trend_score DESC
+            LIMIT 20
+        ''')
+        
+        trends = []
+        for pattern, score, sources, last_seen in cursor.fetchall():
+            trends.append({
+                'pattern': pattern,
+                'trend_score': score,
+                'sources': sources,
+                'last_seen': last_seen
+            })
+        
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'trends': trends,
+            'count': len(trends)
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/learning/quality-insights', methods=['GET'])
+def get_quality_insights():
+    """Get insights about what makes prompts high-quality"""
+    try:
+        import sqlite3
+        conn = sqlite3.connect('learning.db')
+        cursor = conn.cursor()
+        
+        # Get top quality indicators
+        cursor.execute('''
+            SELECT indicator_value, correlation_score, occurrence_count
+            FROM quality_indicators
+            WHERE indicator_type = 'quality_modifier'
+            AND occurrence_count > 10
+            ORDER BY correlation_score DESC
+            LIMIT 15
+        ''')
+        
+        quality_modifiers = []
+        for value, correlation, count in cursor.fetchall():
+            quality_modifiers.append({
+                'term': value,
+                'correlation': correlation,
+                'frequency': count
+            })
+        
+        # Get style library
+        cursor.execute('''
+            SELECT style_name, avg_quality, sample_count
+            FROM style_library
+            WHERE sample_count > 5
+            ORDER BY avg_quality DESC, sample_count DESC
+            LIMIT 15
+        ''')
+        
+        styles = []
+        for name, quality, samples in cursor.fetchall():
+            styles.append({
+                'style': name,
+                'avg_quality': quality,
+                'samples': samples
+            })
+        
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'quality_modifiers': quality_modifiers,
+            'popular_styles': styles
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 # ============ END CREDIT & PAYMENT ROUTES ============
 
 
@@ -1090,6 +1273,12 @@ def faq_page():
 def analytics_dashboard():
     """Serve the analytics dashboard"""
     return render_template('analytics_dashboard.html')
+
+
+@app.route('/learning')
+def learning_dashboard():
+    """Serve the autonomous learning dashboard"""
+    return render_template('learning_dashboard.html')
 
 
 @app.route('/blog')
@@ -2076,6 +2265,13 @@ if __name__ == '__main__':
     print("\n" + "=" * 60)
     print("Add your API keys to the CONFIG dictionary in rootAI.py")
     print("=" * 60 + "\n")
+    
+    # Start autonomous learning engine
+    print("🤖 Starting Autonomous Learning Engine...")
+    autonomous_learner.start_autonomous_learning()
+    print("✅ Learning engine activated - continuously harvesting open-source data")
+    print("📚 Learning from: Civitai, Lexica, Reddit, GitHub, HuggingFace")
+    print("🧠 Building knowledge: Patterns, styles, quality indicators, trends\n")
     
     app.run(debug=False, host='0.0.0.0', port=5000)
 

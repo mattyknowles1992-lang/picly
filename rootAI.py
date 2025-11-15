@@ -65,6 +65,7 @@ CONFIG = {
     'OPENAI_API_KEY': os.getenv('OPENAI_API_KEY', 'your-openai-key-here'),
     'STABILITY_API_KEY': os.getenv('STABILITY_API_KEY', 'your-stability-key-here'),
     'REPLICATE_API_KEY': os.getenv('REPLICATE_API_KEY', 'your-replicate-key-here'),
+    'HUGGINGFACE_API_KEY': os.getenv('HUGGINGFACE_API_KEY', 'your-huggingface-key-here'),
     'STRIPE_SECRET_KEY': os.getenv('STRIPE_SECRET_KEY', 'your-stripe-secret-key-here'),
     'STRIPE_PUBLISHABLE_KEY': os.getenv('STRIPE_PUBLISHABLE_KEY', 'your-stripe-publishable-key-here'),
     'STRIPE_WEBHOOK_SECRET': os.getenv('STRIPE_WEBHOOK_SECRET', 'your-webhook-secret-here'),
@@ -726,7 +727,7 @@ def generate_image():
                     user_db.award_achievement(user_id, '10_generations', 10)
         
         else:
-            # Free tier
+            # Free tier - Try Replicate, fallback to Hugging Face if payment required
             if user_id:
                 # Logged in user - check daily free credits
                 credits = user_db.get_user_credits(user_id)
@@ -737,17 +738,28 @@ def generate_image():
                         'require_purchase': True
                     }), 402
                 
-                # Use Replicate Flux Dev for free tier
+                # Try Replicate first, fallback to Hugging Face
                 result = generate_with_replicate(prompt, negative_prompt, dimensions, quality_boost)
+                
+                # If Replicate fails with payment error, try Hugging Face
+                if not result.get('success') and ('402' in str(result.get('error', '')) or 'Payment Required' in str(result.get('error', ''))):
+                    print("Replicate requires payment, falling back to Hugging Face...")
+                    result = generate_with_huggingface(prompt, negative_prompt, dimensions)
                 
                 if result.get('success'):
                     # Deduct free credit
                     user_db.use_credit(user_id, 'free')
                     result['credits_used'] = 'free'
-                    result['quality_tier'] = 'Flux Dev (9.0/10)'
+                    if 'quality_tier' not in result:
+                        result['quality_tier'] = 'Free Tier (8.5/10)'
             else:
-                # Anonymous user - limited to 10 per day (IP-based limiting would go here)
+                # Anonymous user - Try Replicate, fallback to Hugging Face
                 result = generate_with_replicate(prompt, negative_prompt, dimensions, quality_boost)
+                
+                # If Replicate fails with payment error, try Hugging Face
+                if not result.get('success') and ('402' in str(result.get('error', '')) or 'Payment Required' in str(result.get('error', ''))):
+                    print("Replicate requires payment, falling back to Hugging Face...")
+                    result = generate_with_huggingface(prompt, negative_prompt, dimensions)
                 if result.get('success'):
                     result['credits_used'] = 'anonymous'
                     result['quality_tier'] = 'Flux Dev (9.0/10)'
@@ -1075,6 +1087,76 @@ def generate_with_replicate(prompt, negative_prompt='', dimensions={}, quality_b
         'success': False,
         'error': 'Maximum retries exceeded. Please try again later.'
     }
+
+
+def generate_with_huggingface(prompt, negative_prompt='', dimensions={}):
+    """Generate image using Hugging Face Inference API (completely free, no credit card needed)"""
+    api_key = CONFIG.get('HUGGINGFACE_API_KEY', 'your-huggingface-key-here')
+    
+    # Hugging Face has truly free models - no payment required!
+    # Using Stable Diffusion XL on Hugging Face Inference API
+    
+    if api_key == 'your-huggingface-key-here':
+        # Use public endpoint without auth (rate limited but free)
+        api_url = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0"
+        headers = {}
+    else:
+        # Use authenticated endpoint (higher rate limits)
+        api_url = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0"
+        headers = {"Authorization": f"Bearer {api_key}"}
+    
+    # Build full prompt with negative prompt
+    full_prompt = prompt
+    if negative_prompt:
+        full_prompt = f"{prompt}. Negative prompt: {negative_prompt}"
+    
+    payload = {
+        "inputs": full_prompt,
+        "parameters": {
+            "num_inference_steps": 25,
+            "guidance_scale": 7.5,
+        }
+    }
+    
+    try:
+        # Hugging Face API returns image bytes directly
+        response = requests.post(api_url, headers=headers, json=payload, timeout=60)
+        
+        # Handle model loading (503)
+        if response.status_code == 503:
+            # Model is loading, wait and retry once
+            time.sleep(10)
+            response = requests.post(api_url, headers=headers, json=payload, timeout=60)
+        
+        response.raise_for_status()
+        
+        # Save the image
+        filename = f"generated_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
+        filepath = os.path.join('generated_images', filename)
+        
+        # Ensure directory exists
+        os.makedirs('generated_images', exist_ok=True)
+        
+        with open(filepath, 'wb') as f:
+            f.write(response.content)
+        
+        return {
+            'success': True,
+            'image_url': f'/generated_images/{filename}',
+            'engine': 'Stable Diffusion XL (Free)',
+            'quality_tier': 'Free Tier (8.5/10)'
+        }
+        
+    except requests.RequestException as e:
+        return {
+            'success': False,
+            'error': f'Hugging Face API error: {str(e)}'
+        }
+    except Exception as e:
+        return {
+            'success': False,
+            'error': f'Unexpected error: {str(e)}'
+        }
 
 
 @app.route('/generated_images/<filename>')

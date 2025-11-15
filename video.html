@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0f172a">
+    
+    <title>AI Video Generator | Picly</title>
+    <meta name="description" content="Create stunning AI videos with Picly. Cartoon and premium photorealistic quality. Generate professional videos from text prompts.">
+    
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎬</text></svg>">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Navigation */
+        .top-nav {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: #94a3b8;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+        }
+
+        .nav-link:hover {
+            color: #ffffff;
+            background: rgba(99, 102, 241, 0.1);
+        }
+
+        .nav-link.active {
+            color: #ffffff;
+            background: rgba(99, 102, 241, 0.2);
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .credit-display {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 2rem;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .credit-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .credit-icon {
+            font-size: 1.25rem;
+        }
+
+        .nav-btn {
+            padding: 0.625rem 1.25rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.875rem;
+        }
+
+        .nav-btn.primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+        }
+
+        .nav-btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+        }
+
+        /* Main Container */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            text-align: center;
+            padding: 3rem 0;
+            margin-bottom: 3rem;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ffffff 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: #94a3b8;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Video Generator */
+        .video-generator {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .generator-panel {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 1rem;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .panel-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #e2e8f0;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1.25rem;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 0.5rem;
+            color: #e2e8f0;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        textarea.form-input {
+            min-height: 120px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .quality-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .quality-card {
+            background: rgba(15, 23, 42, 0.8);
+            border: 2px solid rgba(148, 163, 184, 0.2);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .quality-card:hover {
+            border-color: #6366f1;
+            transform: translateY(-2px);
+        }
+
+        .quality-card.selected {
+            border-color: #6366f1;
+            background: rgba(99, 102, 241, 0.15);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .quality-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+
+        .quality-badge.cartoon {
+            background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%);
+            color: white;
+        }
+
+        .quality-badge.premium {
+            background: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
+            color: white;
+        }
+
+        .quality-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .quality-desc {
+            font-size: 0.875rem;
+            color: #94a3b8;
+            margin-bottom: 0.75rem;
+        }
+
+        .quality-cost {
+            font-size: 0.875rem;
+            color: #6366f1;
+            font-weight: 600;
+        }
+
+        .duration-selector {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .duration-btn {
+            flex: 1;
+            padding: 0.75rem;
+            background: rgba(15, 23, 42, 0.8);
+            border: 2px solid rgba(148, 163, 184, 0.2);
+            border-radius: 0.5rem;
+            color: #e2e8f0;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .duration-btn:hover {
+            border-color: #6366f1;
+        }
+
+        .duration-btn.selected {
+            border-color: #6366f1;
+            background: rgba(99, 102, 241, 0.15);
+            color: #ffffff;
+        }
+
+        .generate-btn {
+            width: 100%;
+            padding: 1.25rem;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border: none;
+            border-radius: 0.75rem;
+            color: white;
+            font-size: 1.125rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .generate-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(99, 102, 241, 0.5);
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .preview-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 500px;
+        }
+
+        .preview-placeholder {
+            width: 100%;
+            max-width: 500px;
+            aspect-ratio: 16/9;
+            background: rgba(15, 23, 42, 0.8);
+            border: 2px dashed rgba(148, 163, 184, 0.3);
+            border-radius: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+        }
+
+        .preview-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .preview-text {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        video {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 1rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .video-actions {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .action-btn {
+            padding: 0.875rem 1.5rem;
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 0.5rem;
+            color: #e2e8f0;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .action-btn:hover {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: #6366f1;
+        }
+
+        /* Loading State */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-content {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(148, 163, 184, 0.2);
+            border-top-color: #6366f1;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1.5rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .loading-subtext {
+            font-size: 0.875rem;
+            color: #94a3b8;
+        }
+
+        /* Gallery */
+        .video-gallery {
+            margin-top: 3rem;
+        }
+
+        .gallery-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .gallery-item {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 1rem;
+            overflow: hidden;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .gallery-item video {
+            width: 100%;
+            max-width: none;
+            border-radius: 0;
+        }
+
+        .gallery-item-info {
+            padding: 1rem;
+        }
+
+        .gallery-item-prompt {
+            font-size: 0.875rem;
+            color: #94a3b8;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .nav-container {
+                padding: 0 1rem;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+
+            .video-generator {
+                grid-template-columns: 1fr;
+            }
+
+            .quality-selector {
+                grid-template-columns: 1fr;
+            }
+
+            .gallery-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="top-nav">
+        <div class="nav-container">
+            <div class="nav-brand">
+                🎬 Picly Video
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Generator</a>
+                <a href="editor.html" class="nav-link">Editor Pro</a>
+                <a href="video.html" class="nav-link active">Video</a>
+                <a href="/pricing" class="nav-link">Pricing</a>
+                <a href="/faq" class="nav-link">FAQ</a>
+            </div>
+            <div class="nav-actions">
+                <div class="auth-buttons" id="authButtons">
+                    <button class="nav-btn" id="loginBtn">Sign In</button>
+                    <button class="nav-btn primary" id="registerBtn">Sign Up</button>
+                </div>
+                <div class="credit-display" id="creditDisplay" style="display: none;">
+                    <div class="credit-item">
+                        <span class="credit-icon">🎟️</span>
+                        <span id="tokenBalance">0</span> Tokens
+                    </div>
+                    <button class="nav-btn primary" id="buyTokensBtn">Buy Tokens</button>
+                    <button class="nav-btn" id="logoutBtn">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Hero Section -->
+        <div class="hero-section">
+            <h1 class="hero-title">AI Video Generator</h1>
+            <p class="hero-subtitle">Create stunning AI videos from text prompts. Choose between cartoon style or premium photorealistic quality.</p>
+        </div>
+
+        <!-- Video Generator -->
+        <div class="video-generator">
+            <!-- Input Panel -->
+            <div class="generator-panel">
+                <h2 class="panel-title">🎬 Create Video</h2>
+                
+                <div class="form-group">
+                    <label class="form-label">Video Prompt</label>
+                    <textarea class="form-input" id="videoPrompt" placeholder="Describe your video... e.g., 'A serene mountain landscape at sunset with flowing clouds'"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Quality Level</label>
+                    <div class="quality-selector">
+                        <div class="quality-card selected" data-quality="cartoon" onclick="selectQuality('cartoon')">
+                            <span class="quality-badge cartoon">8-9/10</span>
+                            <div class="quality-name">Cartoon Style</div>
+                            <div class="quality-desc">Stylized, animated look. Perfect for social media, animations, and creative content.</div>
+                            <div class="quality-cost">35 tokens per 8s · 42% more videos</div>
+                        </div>
+                        <div class="quality-card" data-quality="premium" onclick="selectQuality('premium')">
+                            <span class="quality-badge premium">10/10</span>
+                            <div class="quality-name">Premium Photo</div>
+                            <div class="quality-desc">Cinema-quality, photorealistic. Perfect for commercials, product demos, professional content.</div>
+                            <div class="quality-cost">50 tokens per 8s · Maximum quality</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Duration</label>
+                    <div class="duration-selector">
+                        <button class="duration-btn" data-duration="5" onclick="selectDuration(5)">5s</button>
+                        <button class="duration-btn selected" data-duration="8" onclick="selectDuration(8)">8s</button>
+                        <button class="duration-btn" data-duration="10" onclick="selectDuration(10)">10s</button>
+                    </div>
+                </div>
+
+                <button class="generate-btn" id="generateBtn" onclick="generateVideo()">
+                    <span>🎬</span>
+                    <span id="generateBtnText">Generate Video</span>
+                    <span id="generateCost">(35 tokens)</span>
+                </button>
+            </div>
+
+            <!-- Preview Panel -->
+            <div class="generator-panel preview-panel" id="previewPanel">
+                <div class="preview-placeholder" id="previewPlaceholder">
+                    <div class="preview-icon">🎬</div>
+                    <div class="preview-text">Your video will appear here</div>
+                </div>
+                <div id="videoContainer" style="display: none;">
+                    <video id="videoPlayer" controls autoplay loop></video>
+                    <div class="video-actions">
+                        <button class="action-btn" onclick="downloadVideo()">
+                            <span>💾</span> Download
+                        </button>
+                        <button class="action-btn" onclick="shareVideo()">
+                            <span>🔗</span> Share
+                        </button>
+                        <button class="action-btn" onclick="saveToGallery()">
+                            <span>⭐</span> Save to Gallery
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Video Gallery -->
+        <div class="video-gallery" id="videoGallery" style="display: none;">
+            <h2 class="gallery-title">📚 Your Videos</h2>
+            <div class="gallery-grid" id="galleryGrid">
+                <!-- Gallery items will be populated here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <div class="loading-text">Generating your video...</div>
+            <div class="loading-subtext">This may take 60-90 seconds</div>
+        </div>
+    </div>
+
+    <script>
+        let selectedQuality = 'cartoon';
+        let selectedDuration = 8;
+        let currentUser = null;
+        let generatedVideos = [];
+
+        // Check auth on load
+        window.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            loadGallery();
+        });
+
+        function checkAuth() {
+            const token = localStorage.getItem('authToken');
+            if (token) {
+                // Fetch user data
+                fetch('/api/user', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        currentUser = data.user;
+                        updateUI();
+                    } else {
+                        localStorage.removeItem('authToken');
+                    }
+                })
+                .catch(err => console.error('Auth check failed:', err));
+            }
+        }
+
+        function updateUI() {
+            if (currentUser) {
+                document.getElementById('authButtons').style.display = 'none';
+                document.getElementById('creditDisplay').style.display = 'flex';
+                document.getElementById('tokenBalance').textContent = currentUser.tokens || 0;
+            } else {
+                document.getElementById('authButtons').style.display = 'flex';
+                document.getElementById('creditDisplay').style.display = 'none';
+            }
+        }
+
+        function selectQuality(quality) {
+            selectedQuality = quality;
+            document.querySelectorAll('.quality-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            document.querySelector(`[data-quality="${quality}"]`).classList.add('selected');
+            updateCost();
+        }
+
+        function selectDuration(duration) {
+            selectedDuration = duration;
+            document.querySelectorAll('.duration-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            document.querySelector(`[data-duration="${duration}"]`).classList.add('selected');
+            updateCost();
+        }
+
+        function updateCost() {
+            const costs = {
+                cartoon: { 5: 20, 8: 35, 10: 45 },
+                premium: { 5: 30, 8: 50, 10: 60 }
+            };
+            const cost = costs[selectedQuality][selectedDuration];
+            document.getElementById('generateCost').textContent = `(${cost} tokens)`;
+        }
+
+        async function generateVideo() {
+            const prompt = document.getElementById('videoPrompt').value.trim();
+            
+            if (!prompt) {
+                alert('Please enter a video prompt');
+                return;
+            }
+
+            if (!currentUser) {
+                alert('Please sign in to generate videos');
+                document.getElementById('loginBtn').click();
+                return;
+            }
+
+            const token = localStorage.getItem('authToken');
+            const generateBtn = document.getElementById('generateBtn');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+
+            generateBtn.disabled = true;
+            loadingOverlay.classList.add('active');
+
+            try {
+                const response = await fetch('/api/generate-video', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        quality: selectedQuality,
+                        duration: selectedDuration
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayVideo(data.video_url, prompt);
+                    currentUser.tokens = data.tokens_remaining;
+                    updateUI();
+                    generatedVideos.unshift({ url: data.video_url, prompt: prompt });
+                    loadGallery();
+                } else {
+                    alert(data.error || 'Failed to generate video');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to generate video. Please try again.');
+            } finally {
+                generateBtn.disabled = false;
+                loadingOverlay.classList.remove('active');
+            }
+        }
+
+        function displayVideo(url, prompt) {
+            const placeholder = document.getElementById('previewPlaceholder');
+            const container = document.getElementById('videoContainer');
+            const player = document.getElementById('videoPlayer');
+
+            placeholder.style.display = 'none';
+            container.style.display = 'block';
+            player.src = url;
+            player.dataset.prompt = prompt;
+        }
+
+        function downloadVideo() {
+            const player = document.getElementById('videoPlayer');
+            const link = document.createElement('a');
+            link.href = player.src;
+            link.download = `picly-video-${Date.now()}.mp4`;
+            link.click();
+        }
+
+        function shareVideo() {
+            const player = document.getElementById('videoPlayer');
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Picly AI Video',
+                    text: 'Check out this AI-generated video!',
+                    url: player.src
+                });
+            } else {
+                navigator.clipboard.writeText(player.src);
+                alert('Video URL copied to clipboard!');
+            }
+        }
+
+        function saveToGallery() {
+            alert('Video saved to your gallery!');
+        }
+
+        function loadGallery() {
+            if (generatedVideos.length > 0) {
+                const gallery = document.getElementById('videoGallery');
+                const grid = document.getElementById('galleryGrid');
+                gallery.style.display = 'block';
+                
+                grid.innerHTML = generatedVideos.map(video => `
+                    <div class="gallery-item" onclick="displayVideo('${video.url}', '${video.prompt}')">
+                        <video src="${video.url}" muted></video>
+                        <div class="gallery-item-info">
+                            <div class="gallery-item-prompt">${video.prompt}</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Auth buttons
+        document.getElementById('loginBtn')?.addEventListener('click', () => {
+            window.location.href = '/login';
+        });
+
+        document.getElementById('registerBtn')?.addEventListener('click', () => {
+            window.location.href = '/register';
+        });
+
+        document.getElementById('buyTokensBtn')?.addEventListener('click', () => {
+            window.location.href = '/pricing';
+        });
+
+        document.getElementById('logoutBtn')?.addEventListener('click', () => {
+            localStorage.removeItem('authToken');
+            window.location.reload();
+        });
+    </script>
+</body>
+</html>

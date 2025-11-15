@@ -844,6 +844,12 @@ def pricing_page():
     return render_template('pricing.html')
 
 
+@app.route('/signup')
+def signup_page():
+    """Serve the signup page"""
+    return render_template('signup.html')
+
+
 @app.route('/faq')
 def faq_page():
     """Serve the FAQ page"""

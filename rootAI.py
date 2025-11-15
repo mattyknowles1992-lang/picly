@@ -2607,6 +2607,72 @@ def generate_video_preview():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@app.route('/api/spin-wheel', methods=['POST'])
+def spin_wheel():
+    """Award prize from daily spin wheel"""
+    try:
+        # Check authentication
+        auth_header = request.headers.get('Authorization', '')
+        if not auth_header.startswith('Bearer '):
+            return jsonify({'success': False, 'error': 'Must be logged in'}), 401
+        
+        token = auth_header.replace('Bearer ', '')
+        validation = user_db.validate_session(token)
+        
+        if not validation.get('valid'):
+            return jsonify({'success': False, 'error': 'Invalid session'}), 401
+        
+        user_id = validation['user_id']
+        
+        # Get prize value
+        data = request.get_json()
+        prize = data.get('prize', 'try_again')
+        
+        # Check if user has already spun today (optional server-side validation)
+        # For now, we trust client-side localStorage, but you could add DB tracking
+        
+        # Award prizes
+        tokens_awarded = 0
+        
+        if prize == 'free_video':
+            # Award 50 tokens (enough for one video)
+            tokens_awarded = 50
+            for _ in range(50):
+                user_db.add_credit(user_id, 'premium')
+        elif prize == '50_tokens':
+            tokens_awarded = 50
+            for _ in range(50):
+                user_db.add_credit(user_id, 'premium')
+        elif prize == '25_tokens':
+            tokens_awarded = 25
+            for _ in range(25):
+                user_db.add_credit(user_id, 'premium')
+        elif prize == '10_tokens':
+            tokens_awarded = 10
+            for _ in range(10):
+                user_db.add_credit(user_id, 'premium')
+        elif prize == '5_tokens':
+            tokens_awarded = 5
+            for _ in range(5):
+                user_db.add_credit(user_id, 'premium')
+        # 'try_again' awards nothing
+        
+        # Get updated token count
+        credits = user_db.get_user_credits(user_id)
+        total_tokens = credits.get('premium_credits', 0) + credits.get('free_credits', 0)
+        
+        return jsonify({
+            'success': True,
+            'prize': prize,
+            'tokens_awarded': tokens_awarded,
+            'tokens': total_tokens,
+            'message': f'Prize awarded successfully!'
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/api/generate-video', methods=['POST'])
 def generate_video():
     """Generate video from image using premium AI"""

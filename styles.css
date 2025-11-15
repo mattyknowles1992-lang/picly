@@ -3075,4 +3075,243 @@ html {
     margin: 1rem 0;
 }
 
+/* ============================================
+   PRIZE WHEEL SECTION
+   ============================================ */
+
+.prize-wheel-section {
+    margin: 3rem auto 2rem;
+    max-width: 900px;
+    animation: fadeInUp 0.6s ease;
+}
+
+.prize-wheel-card {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+    backdrop-filter: blur(20px);
+    border: 2px solid rgba(99, 102, 241, 0.3);
+    border-radius: var(--border-radius);
+    padding: 2.5rem;
+    box-shadow: 0 20px 60px rgba(99, 102, 241, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.prize-wheel-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+    animation: rotate 20s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.prize-wheel-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    position: relative;
+    z-index: 1;
+}
+
+.prize-wheel-header h2 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b, #ec4899);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.prize-wheel-header p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+.wheel-container {
+    position: relative;
+    width: 400px;
+    height: 400px;
+    margin: 0 auto 2rem;
+    z-index: 1;
+}
+
+.wheel-pointer {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 3rem;
+    color: #fbbf24;
+    z-index: 10;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.5));
+    animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(-10px); }
+}
+
+#wheelCanvas {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    filter: drop-shadow(0 10px 30px rgba(0, 0, 0, 0.5));
+}
+
+.spin-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    border: 6px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 24px rgba(251, 191, 36, 0.4), inset 0 2px 8px rgba(255, 255, 255, 0.3);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    z-index: 5;
+}
+
+.spin-button:hover:not(:disabled) {
+    transform: translate(-50%, -50%) scale(1.1);
+    box-shadow: 0 12px 32px rgba(251, 191, 36, 0.6), inset 0 2px 8px rgba(255, 255, 255, 0.3);
+}
+
+.spin-button:active:not(:disabled) {
+    transform: translate(-50%, -50%) scale(0.95);
+}
+
+.spin-button:disabled {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.spin-icon {
+    font-size: 2rem;
+}
+
+.spin-text {
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+}
+
+.prize-info {
+    position: relative;
+    z-index: 1;
+}
+
+.next-spin {
+    text-align: center;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+#spinStatus {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.prize-list h3 {
+    text-align: center;
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+    color: var(--text-secondary);
+}
+
+.prizes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+}
+
+.prize-chip {
+    padding: 0.75rem 1rem;
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 8px;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.prize-chip:hover {
+    background: rgba(99, 102, 241, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .prize-wheel-card {
+        padding: 1.5rem;
+    }
+    
+    .prize-wheel-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .prize-wheel-header p {
+        font-size: 0.95rem;
+    }
+    
+    .wheel-container {
+        width: 300px;
+        height: 300px;
+    }
+    
+    .spin-button {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .spin-icon {
+        font-size: 1.5rem;
+    }
+    
+    .spin-text {
+        font-size: 0.75rem;
+    }
+    
+    .prizes-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Prize Win Animation */
+@keyframes prizeWin {
+    0%, 100% { transform: scale(1); }
+    25% { transform: scale(1.2) rotate(-5deg); }
+    50% { transform: scale(1.2) rotate(5deg); }
+    75% { transform: scale(1.2) rotate(-5deg); }
+}
+
+.prize-winner {
+    animation: prizeWin 0.6s ease;
+}
+
+
+
+
 

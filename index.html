@@ -323,6 +323,42 @@
             </div>
         </header>
 
+        <!-- Daily Prize Wheel -->
+        <section class="prize-wheel-section" id="prizeWheelSection" style="display: none;">
+            <div class="prize-wheel-card">
+                <div class="prize-wheel-header">
+                    <h2>🎡 Daily Prize Wheel</h2>
+                    <p>Spin once per day for a chance to win FREE credits or premium features!</p>
+                </div>
+                
+                <div class="wheel-container">
+                    <div class="wheel-pointer">▼</div>
+                    <canvas id="wheelCanvas" width="400" height="400"></canvas>
+                    <button class="spin-button" id="spinButton">
+                        <span class="spin-icon">🎰</span>
+                        <span class="spin-text">SPIN NOW!</span>
+                    </button>
+                </div>
+                
+                <div class="prize-info">
+                    <div class="next-spin" id="nextSpinInfo">
+                        <span id="spinStatus">✨ Free spin available!</span>
+                    </div>
+                    <div class="prize-list">
+                        <h3>Possible Prizes:</h3>
+                        <div class="prizes-grid">
+                            <div class="prize-chip">🎬 Free Video Generation</div>
+                            <div class="prize-chip">🪙 50 Free Tokens</div>
+                            <div class="prize-chip">⭐ 25 Free Tokens</div>
+                            <div class="prize-chip">💎 10 Free Tokens</div>
+                            <div class="prize-chip">🎁 5 Free Tokens</div>
+                            <div class="prize-chip">🔄 Try Again</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- Main Generator Section -->
         <section class="generator-section">
             <h2>Generate Your Image</h2>
@@ -781,5 +817,284 @@
 
 
     <script src="script.js"></script>
+    
+    <!-- Prize Wheel Script -->
+    <script>
+        // Prize Wheel Configuration
+        const prizes = [
+            { text: '🎬 FREE VIDEO', color: '#ec4899', value: 'free_video', weight: 5 },
+            { text: '🪙 50 TOKENS', color: '#fbbf24', value: '50_tokens', weight: 10 },
+            { text: '⭐ 25 TOKENS', color: '#8b5cf6', value: '25_tokens', weight: 15 },
+            { text: '💎 10 TOKENS', color: '#6366f1', value: '10_tokens', weight: 20 },
+            { text: '🎁 5 TOKENS', color: '#10b981', value: '5_tokens', weight: 30 },
+            { text: '🔄 TRY AGAIN', color: '#64748b', value: 'try_again', weight: 20 }
+        ];
+
+        let currentRotation = 0;
+        let isSpinning = false;
+
+        // Draw the wheel
+        function drawWheel() {
+            const canvas = document.getElementById('wheelCanvas');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 180;
+            
+            let startAngle = currentRotation * Math.PI / 180;
+            const angleStep = (2 * Math.PI) / prizes.length;
+            
+            prizes.forEach((prize, index) => {
+                const endAngle = startAngle + angleStep;
+                
+                // Draw segment
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, startAngle, endAngle);
+                ctx.lineTo(centerX, centerY);
+                ctx.fillStyle = prize.color;
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Draw text
+                ctx.save();
+                ctx.translate(centerX, centerY);
+                ctx.rotate(startAngle + angleStep / 2);
+                ctx.textAlign = 'right';
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 14px Inter';
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                ctx.shadowBlur = 4;
+                ctx.fillText(prize.text, radius - 20, 5);
+                ctx.restore();
+                
+                startAngle = endAngle;
+            });
+            
+            // Draw center circle
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 30, 0, 2 * Math.PI);
+            ctx.fillStyle = '#0f172a';
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+        }
+
+        // Weighted random selection
+        function getRandomPrize() {
+            const totalWeight = prizes.reduce((sum, prize) => sum + prize.weight, 0);
+            let random = Math.random() * totalWeight;
+            
+            for (let prize of prizes) {
+                if (random < prize.weight) {
+                    return prize;
+                }
+                random -= prize.weight;
+            }
+            return prizes[prizes.length - 1];
+        }
+
+        // Spin the wheel
+        function spinWheel() {
+            if (isSpinning) return;
+            
+            if (!currentUser) {
+                alert('Please sign in to spin the wheel!');
+                document.getElementById('loginBtn').click();
+                return;
+            }
+            
+            isSpinning = true;
+            const spinButton = document.getElementById('spinButton');
+            spinButton.disabled = true;
+            
+            // Select prize
+            const selectedPrize = getRandomPrize();
+            const prizeIndex = prizes.findIndex(p => p.value === selectedPrize.value);
+            
+            // Calculate rotation
+            const spinDuration = 4000; // 4 seconds
+            const minSpins = 5;
+            const targetAngle = (360 / prizes.length) * prizeIndex;
+            const totalRotation = (360 * minSpins) + (360 - targetAngle) + (Math.random() * 30 - 15);
+            
+            const startTime = Date.now();
+            const startRotation = currentRotation;
+            
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / spinDuration, 1);
+                
+                // Easing function (ease-out)
+                const easeProgress = 1 - Math.pow(1 - progress, 3);
+                
+                currentRotation = (startRotation + totalRotation * easeProgress) % 360;
+                drawWheel();
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    isSpinning = false;
+                    handlePrizeWin(selectedPrize);
+                }
+            }
+            
+            animate();
+        }
+
+        // Handle prize win
+        async function handlePrizeWin(prize) {
+            const spinButton = document.getElementById('spinButton');
+            
+            // Confetti animation
+            setTimeout(() => {
+                showPrizeModal(prize);
+                
+                // Award the prize via API
+                awardPrize(prize);
+            }, 500);
+            
+            // Update next spin time (24 hours)
+            const nextSpin = new Date();
+            nextSpin.setHours(nextSpin.getHours() + 24);
+            localStorage.setItem('nextSpinTime', nextSpin.toISOString());
+            updateSpinStatus();
+        }
+
+        // Show prize modal
+        function showPrizeModal(prize) {
+            const messages = {
+                'free_video': '🎬 Congratulations! You won a FREE VIDEO generation!',
+                '50_tokens': '🪙 Amazing! You won 50 FREE TOKENS!',
+                '25_tokens': '⭐ Awesome! You won 25 FREE TOKENS!',
+                '10_tokens': '💎 Nice! You won 10 FREE TOKENS!',
+                '5_tokens': '🎁 Great! You won 5 FREE TOKENS!',
+                'try_again': '🔄 Better luck next time! Spin again tomorrow!'
+            };
+            
+            const message = messages[prize.value] || 'You won a prize!';
+            
+            // Create fancy modal
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(135deg, ${prize.color}22, ${prize.color}11);
+                backdrop-filter: blur(20px);
+                border: 2px solid ${prize.color};
+                border-radius: 20px;
+                padding: 3rem;
+                z-index: 10000;
+                text-align: center;
+                max-width: 90%;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+                animation: prizeWin 0.6s ease;
+            `;
+            
+            modal.innerHTML = `
+                <div style="font-size: 4rem; margin-bottom: 1rem;">${prize.text.split(' ')[0]}</div>
+                <h2 style="font-size: 1.8rem; margin-bottom: 1rem; color: white;">${message}</h2>
+                <button onclick="this.parentElement.remove()" style="
+                    padding: 1rem 2rem;
+                    background: ${prize.color};
+                    color: white;
+                    border: none;
+                    border-radius: 10px;
+                    font-size: 1.1rem;
+                    font-weight: 600;
+                    cursor: pointer;
+                    margin-top: 1rem;
+                ">Awesome! 🎉</button>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // Auto-remove after 10 seconds
+            setTimeout(() => modal.remove(), 10000);
+        }
+
+        // Award prize via API
+        async function awardPrize(prize) {
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch('/api/spin-wheel', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ prize: prize.value })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update user credits display
+                    if (currentUser && data.tokens) {
+                        currentUser.tokens = data.tokens;
+                        document.getElementById('totalTokens').textContent = data.tokens;
+                    }
+                }
+            } catch (error) {
+                console.error('Error awarding prize:', error);
+            }
+        }
+
+        // Update spin status
+        function updateSpinStatus() {
+            const nextSpinTime = localStorage.getItem('nextSpinTime');
+            const spinButton = document.getElementById('spinButton');
+            const spinStatus = document.getElementById('spinStatus');
+            
+            if (!nextSpinTime) {
+                spinButton.disabled = false;
+                spinStatus.textContent = '✨ Free spin available!';
+                return;
+            }
+            
+            const now = new Date();
+            const nextSpin = new Date(nextSpinTime);
+            
+            if (now >= nextSpin) {
+                spinButton.disabled = false;
+                spinStatus.textContent = '✨ Free spin available!';
+                localStorage.removeItem('nextSpinTime');
+            } else {
+                spinButton.disabled = true;
+                const hoursLeft = Math.ceil((nextSpin - now) / (1000 * 60 * 60));
+                spinStatus.textContent = `⏰ Next spin in ${hoursLeft} hours`;
+            }
+        }
+
+        // Initialize wheel when page loads
+        window.addEventListener('load', () => {
+            if (currentUser) {
+                document.getElementById('prizeWheelSection').style.display = 'block';
+                drawWheel();
+                updateSpinStatus();
+                
+                // Update status every minute
+                setInterval(updateSpinStatus, 60000);
+            }
+        });
+
+        // Show wheel when user logs in
+        document.addEventListener('userLoggedIn', () => {
+            if (currentUser) {
+                document.getElementById('prizeWheelSection').style.display = 'block';
+                drawWheel();
+                updateSpinStatus();
+            }
+        });
+
+        // Attach spin event
+        document.getElementById('spinButton')?.addEventListener('click', spinWheel);
+    </script>
 </body>
 </html>

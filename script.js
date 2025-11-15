@@ -107,8 +107,19 @@ document.addEventListener('DOMContentLoaded', () => {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const username = document.getElementById('loginUsername').value;
+            const username = document.getElementById('loginUsername').value.trim();
             const password = document.getElementById('loginPassword').value;
+            
+            // Validate inputs
+            if (!username || username.length === 0) {
+                showNotification('Please enter your username or email', 'error');
+                return;
+            }
+            
+            if (!password || password.length === 0) {
+                showNotification('Please enter your password', 'error');
+                return;
+            }
             
             try {
                 const response = await fetch('/api/auth/login', {
@@ -138,9 +149,37 @@ document.addEventListener('DOMContentLoaded', () => {
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const username = document.getElementById('regUsername').value;
-            const email = document.getElementById('regEmail').value;
+            const username = document.getElementById('regUsername').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
             const password = document.getElementById('regPassword').value;
+            
+            // Validate all fields are filled
+            if (!username || username.length === 0) {
+                showNotification('Please enter a username', 'error');
+                return;
+            }
+            
+            if (!email || email.length === 0) {
+                showNotification('Please enter an email address', 'error');
+                return;
+            }
+            
+            // Validate email format
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showNotification('Please enter a valid email address', 'error');
+                return;
+            }
+            
+            if (!password || password.length === 0) {
+                showNotification('Please enter a password', 'error');
+                return;
+            }
+            
+            if (password.length < 8) {
+                showNotification('Password must be at least 8 characters long', 'error');
+                return;
+            }
             
             try {
                 const response = await fetch('/api/auth/register', {

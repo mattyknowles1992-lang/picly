@@ -31,12 +31,18 @@
     --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+html, body {
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
+}
+
 body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: var(--bg-darker);
     color: var(--text-primary);
     line-height: 1.6;
-    overflow-x: hidden;
+    position: relative;
 }
 
 /* Animated Background */

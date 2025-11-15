@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Picly Blog - AI Image & Video Generation Guides | Tips & Tutorials</title>
+    <meta name="description" content="Learn everything about AI image and video generation. Free guides, comparisons, tutorials, and tips for creating professional AI content.">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #1e293b;
+            min-height: 100vh;
+        }
+
+        .top-nav {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e2e8f0;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-brand {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-link {
+            color: #64748b;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: #6366f1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+        }
+
+        .hero {
+            text-align: center;
+            color: white;
+            margin-bottom: 4rem;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 900;
+            margin-bottom: 1rem;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            opacity: 0.95;
+        }
+
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .blog-card {
+            background: white;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            transition: all 0.3s;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .blog-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+        }
+
+        .blog-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+        }
+
+        .blog-content {
+            padding: 2rem;
+        }
+
+        .blog-category {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: #6366f1;
+            color: white;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .blog-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 0.75rem;
+            color: #0f172a;
+        }
+
+        .blog-excerpt {
+            font-size: 0.9375rem;
+            color: #64748b;
+            margin-bottom: 1rem;
+            line-height: 1.6;
+        }
+
+        .blog-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.875rem;
+            color: #94a3b8;
+        }
+
+        .coming-soon {
+            opacity: 0.6;
+            position: relative;
+        }
+
+        .coming-soon::after {
+            content: 'Coming Soon';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #6366f1;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 700;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .blog-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="nav-container">
+            <div class="nav-brand">Picly Blog</div>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/pricing" class="nav-link">Pricing</a>
+                <a href="/faq" class="nav-link">FAQ</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="hero">
+            <h1>📚 Picly Blog</h1>
+            <p>Guides, comparisons, and tutorials for AI image & video generation</p>
+        </div>
+
+        <div class="blog-grid">
+            <!-- Published Post #1 -->
+            <a href="/blog/best-free-ai-image-generators-2025" class="blog-card">
+                <div class="blog-image">🏆</div>
+                <div class="blog-content">
+                    <span class="blog-category">AI Image Generators</span>
+                    <h2 class="blog-title">10 Best Free AI Image Generators in 2025</h2>
+                    <p class="blog-excerpt">
+                        We tested 50+ AI generators. Here are the top 10 free options with quality comparisons, pricing, and honest reviews.
+                    </p>
+                    <div class="blog-meta">
+                        <span>📅 Nov 15, 2025</span>
+                        <span>⏱️ 12 min read</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Coming Soon Posts -->
+            <div class="blog-card coming-soon">
+                <div class="blog-image">⚔️</div>
+                <div class="blog-content">
+                    <span class="blog-category">Comparisons</span>
+                    <h2 class="blog-title">Midjourney vs Picly: Which is Better in 2025?</h2>
+                    <p class="blog-excerpt">
+                        Head-to-head comparison of Midjourney and Picly. Price, quality, features, and which tool wins for your use case.
+                    </p>
+                    <div class="blog-meta">
+                        <span>📅 Coming Soon</span>
+                        <span>⏱️ 10 min read</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="blog-card coming-soon">
+                <div class="blog-image">🎬</div>
+                <div class="blog-content">
+                    <span class="blog-category">Video Guides</span>
+                    <h2 class="blog-title">AI Video Generators: Cartoon vs Premium Quality</h2>
+                    <p class="blog-excerpt">
+                        Complete guide to AI video generation. When to use cartoon style vs premium photorealistic, with cost breakdown.
+                    </p>
+                    <div class="blog-meta">
+                        <span>📅 Coming Soon</span>
+                        <span>⏱️ 8 min read</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="blog-card coming-soon">
+                <div class="blog-image">💰</div>
+                <div class="blog-content">
+                    <span class="blog-category">Pricing</span>
+                    <h2 class="blog-title">AI Image Generator Pricing: Complete Cost Breakdown</h2>
+                    <p class="blog-excerpt">
+                        How much does AI content really cost? Hidden fees exposed. Midjourney vs DALL-E vs Picly pricing comparison.
+                    </p>
+                    <div class="blog-meta">
+                        <span>📅 Coming Soon</span>
+                        <span>⏱️ 9 min read</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="blog-card coming-soon">
+                <div class="blog-image">💎</div>
+                <div class="blog-content">
+                    <span class="blog-category">Tutorials</span>
+                    <h2 class="blog-title">DALL-E 3 Free: How to Generate HD Images Without Subscription</h2>
+                    <p class="blog-excerpt">
+                        Legal ways to use DALL-E 3 HD quality for free. Quality comparison and guide to getting the best results.
+                    </p>
+                    <div class="blog-meta">
+                        <span>📅 Coming Soon</span>
+                        <span>⏱️ 7 min read</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="blog-card coming-soon">
+                <div class="blog-image">📸</div>
+                <div class="blog-content">
+                    <span class="blog-category">Business</span>
+                    <h2 class="blog-title">AI Product Photography: Complete Guide for E-commerce</h2>
+                    <p class="blog-excerpt">
+                        How to create professional product photos with AI. Save thousands on photography with this step-by-step guide.
+                    </p>
+                    <div class="blog-meta">
+                        <span>📅 Coming Soon</span>
+                        <span>⏱️ 11 min read</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -761,6 +761,18 @@ def faq_page():
     return render_template('faq.html')
 
 
+@app.route('/blog')
+def blog_index():
+    """Serve the blog index page"""
+    return send_from_directory('blog', 'index.html')
+
+
+@app.route('/blog/<path:post>')
+def blog_post(post):
+    """Serve individual blog posts"""
+    return send_from_directory('blog', f'{post}.html')
+
+
 @app.route('/admin')
 def admin_dashboard():
     """Serve the admin dashboard"""

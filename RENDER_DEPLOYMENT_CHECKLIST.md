@@ -24,7 +24,7 @@
 - Start Command: `gunicorn rootAI:app --bind 0.0.0.0:$PORT`
 
 **Instance Type:**
-- Select: **Starter** ($7/month)
+- Select: **Starter** ($9/month)
 - Why: Better performance, no cold starts
 
 ### Step 3: Environment Variables
@@ -43,19 +43,21 @@ OPENAI_API_KEY = (add after getting key)
 4. Note your URL: `https://picly.onrender.com`
 
 ### Step 5: Get OpenAI API Key
-1. Go to https://platform.openai.com/signup
-2. Sign up / Log in
-3. Go to https://platform.openai.com/api-keys
-4. Click **"Create new secret key"**
-5. Name it "Picly Production"
-6. Copy the key (starts with `sk-proj-...`)
+1. Go to **https://platform.openai.com/signup**
+2. Sign up / Log in with your email or Google/GitHub
+3. Verify your email address
+4. Go to **https://platform.openai.com/api-keys**
+5. Click **"Create new secret key"**
+6. Name it "Picly Production"
+7. Copy the key (starts with `sk-proj-...`)
+8. **SAVE IT** - you can't view it again!
 
 ### Step 6: Add Billing to OpenAI
-1. Go to https://platform.openai.com/account/billing
+1. Go to **https://platform.openai.com/settings/organization/billing/overview**
 2. Click **"Add payment method"**
 3. Add credit card
-4. **Add credit**: $10 (will last ~250 images)
-5. Set spending limit: $50/month
+4. **Add credit**: $10 (will last ~250 HD images)
+5. Set spending limit: $50/month (optional but recommended)
 
 ### Step 7: Add API Key to Render
 1. Back in Render dashboard
@@ -124,7 +126,7 @@ OPENAI_API_KEY = (add after getting key)
 ## 💰 Cost Tracking
 
 **Monthly Costs:**
-- Render Starter: $7
+- Render Starter: $9
 - OpenAI API: ~$0.04 per image
   - 100 images = $4
   - 500 images = $20

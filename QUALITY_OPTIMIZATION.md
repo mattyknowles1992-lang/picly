@@ -29,7 +29,7 @@
 
 ## 🚀 DEPLOYMENT OPTIMIZATIONS
 
-### Render.com Starter Plan ($7/month)
+### Render.com Starter Plan ($9/month)
 - ✅ Fast SSD storage
 - ✅ Auto-scaling
 - ✅ Free SSL/HTTPS
@@ -104,8 +104,8 @@ The only way to improve is spending 2-3x more money for marginal gains (9.5 → 
 ---
 
 **Your current stack:**
-- Render Starter ($7/month) 
+- Render Starter ($9/month) 
 - OpenAI DALL-E 3 HD (~$20/month for 500 images)
-- **Total: ~$27/month for professional-grade AI image generation**
+- **Total: ~£28/month for professional-grade AI image generation**
 
 Perfect for 1,000-5,000 visitors! 🎉

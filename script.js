@@ -1499,7 +1499,10 @@ window.addEventListener('load', () => {
 });
 
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', () => {
+    init();
+    initializeBuyCredits();
+});
 
 // ============================================
 // CREDIT SYSTEM & MONETIZATION
@@ -1639,18 +1642,24 @@ async function saveNotificationSettings() {
     }
 }
 
-// Handle credit package purchase
-document.querySelectorAll('.buy-btn[data-package]').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-        const packageId = e.target.dataset.package;
-        await purchaseCredits(packageId);
+// Initialize buy credits functionality
+function initializeBuyCredits() {
+    // Handle credit package purchase
+    document.querySelectorAll('.buy-btn[data-package]').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const packageId = e.target.dataset.package;
+            await purchaseCredits(packageId);
+        });
     });
-});
 
-// Handle unlimited subscription
-document.getElementById('subscribeBtn')?.addEventListener('click', async () => {
-    await subscribeUnlimited();
-});
+    // Handle unlimited subscription
+    const subscribeBtn = document.getElementById('subscribeBtn');
+    if (subscribeBtn) {
+        subscribeBtn.addEventListener('click', async () => {
+            await subscribeUnlimited();
+        });
+    }
+}
 
 // Purchase credits
 async function purchaseCredits(packageId) {

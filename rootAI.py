@@ -15,6 +15,7 @@ from collections import defaultdict
 import time
 from cost_monitor import cost_monitor
 from rating_system import rating_system
+from analytics_system import analytics_system
 
 # Image enhancement libraries
 try:
@@ -738,6 +739,175 @@ def claim_achievement():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+# ============ ANALYTICS & RATING SYSTEM ROUTES ============
+
+@app.route('/api/analytics/rate', methods=['POST'])
+def submit_rating():
+    """Submit rating for a generation"""
+    try:
+        session_token = request.cookies.get('session_token')
+        if not session_token:
+            return jsonify({'success': False, 'error': 'Must be logged in'}), 401
+        
+        validation = user_db.validate_session(session_token)
+        if not validation.get('valid'):
+            return jsonify({'success': False, 'error': 'Invalid session'}), 401
+        
+        data = request.json
+        generation_id = data.get('generation_id')
+        rating = data.get('rating')  # 1-5 stars
+        quality_score = data.get('quality_score')  # Optional 0-100
+        feedback_text = data.get('feedback')
+        feedback_tags = data.get('tags')  # List of tags
+        time_to_rate = data.get('time_to_rate')  # Time in seconds
+        
+        if not generation_id or not rating:
+            return jsonify({'success': False, 'error': 'Missing required fields'}), 400
+        
+        if rating < 1 or rating > 5:
+            return jsonify({'success': False, 'error': 'Rating must be 1-5'}), 400
+        
+        result = analytics_system.submit_rating(
+            generation_id=generation_id,
+            rating=rating,
+            quality_score=quality_score,
+            feedback_text=feedback_text,
+            feedback_tags=json.dumps(feedback_tags) if feedback_tags else None,
+            time_to_rate=time_to_rate
+        )
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/analytics/action', methods=['POST'])
+def track_generation_action():
+    """Track actions on generations (download, share, edit, etc.)"""
+    try:
+        session_token = request.cookies.get('session_token')
+        if not session_token:
+            return jsonify({'success': False, 'error': 'Must be logged in'}), 401
+        
+        data = request.json
+        generation_id = data.get('generation_id')
+        action_type = data.get('action')  # download, share, edit, regenerate, use
+        
+        if not generation_id or not action_type:
+            return jsonify({'success': False, 'error': 'Missing required fields'}), 400
+        
+        success = analytics_system.update_generation_action(generation_id, action_type)
+        
+        return jsonify({'success': success})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/analytics/behavior', methods=['POST'])
+def track_behavior():
+    """Track user behavior for UX analytics"""
+    try:
+        session_token = request.cookies.get('session_token')
+        user_id = 0  # Anonymous by default
+        
+        if session_token:
+            validation = user_db.validate_session(session_token)
+            if validation.get('valid'):
+                user_id = validation['user_id']
+        
+        data = request.json
+        session_id = data.get('session_id')
+        action_type = data.get('action')
+        action_details = data.get('details')
+        page_url = data.get('page')
+        device_info = data.get('device')
+        interaction_time = data.get('time')
+        
+        if not session_id or not action_type:
+            return jsonify({'success': False, 'error': 'Missing required fields'}), 400
+        
+        success = analytics_system.track_user_behavior(
+            user_id=user_id,
+            session_id=session_id,
+            action_type=action_type,
+            action_details=action_details,
+            page_url=page_url,
+            device_info=device_info,
+            interaction_time=interaction_time
+        )
+        
+        return jsonify({'success': success})
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/analytics/prompt-suggestions', methods=['GET'])
+def get_prompt_suggestions():
+    """Get AI-powered prompt suggestions based on top performers"""
+    try:
+        engine = request.args.get('engine', 'flux-pro')
+        partial_prompt = request.args.get('prompt', '')
+        limit = int(request.args.get('limit', 5))
+        
+        suggestions = analytics_system.get_prompt_suggestions(partial_prompt, engine, limit)
+        
+        return jsonify({
+            'success': True,
+            'suggestions': suggestions
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/analytics/top-prompts', methods=['GET'])
+def get_top_prompts():
+    """Get highest rated prompts for inspiration"""
+    try:
+        engine = request.args.get('engine')
+        min_ratings = int(request.args.get('min_ratings', 5))
+        limit = int(request.args.get('limit', 50))
+        
+        prompts = analytics_system.get_top_prompts(engine, min_ratings, limit)
+        
+        return jsonify({
+            'success': True,
+            'prompts': prompts
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/analytics/dashboard', methods=['GET'])
+def get_analytics_dashboard():
+    """Get comprehensive analytics dashboard (admin only)"""
+    try:
+        session_token = request.cookies.get('session_token')
+        if not session_token:
+            return jsonify({'success': False, 'error': 'Must be logged in'}), 401
+        
+        validation = user_db.validate_session(session_token)
+        if not validation.get('valid'):
+            return jsonify({'success': False, 'error': 'Invalid session'}), 401
+        
+        # TODO: Add admin check here
+        
+        days = int(request.args.get('days', 30))
+        dashboard = analytics_system.get_analytics_dashboard(days)
+        
+        return jsonify({
+            'success': True,
+            'data': dashboard
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 # ============ END CREDIT & PAYMENT ROUTES ============
 
 
@@ -854,6 +1024,12 @@ def signup_page():
 def faq_page():
     """Serve the FAQ page"""
     return render_template('faq.html')
+
+
+@app.route('/analytics')
+def analytics_dashboard():
+    """Serve the analytics dashboard"""
+    return render_template('analytics_dashboard.html')
 
 
 @app.route('/blog')
@@ -1067,6 +1243,22 @@ def generate_image():
                 result['image_url'] = enhanced_path.replace('generated_images/', '/generated_images/')
                 result['enhanced'] = True
                 result['upscaled'] = upscale if upscale > 1 else False
+        
+        # Track generation in analytics system
+        if result.get('success') and user_id:
+            import uuid
+            generation_id = str(uuid.uuid4())
+            result['generation_id'] = generation_id
+            
+            # Record generation for analytics
+            analytics_system.record_generation(
+                generation_id=generation_id,
+                user_id=user_id,
+                prompt=prompt,
+                engine=result.get('engine', 'unknown'),
+                model_version=result.get('quality_tier', 'standard'),
+                session_id=session_token
+            )
         
         return jsonify(result)
     

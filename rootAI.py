@@ -8,9 +8,11 @@ from flask_cors import CORS
 import os
 import requests
 import base64
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 from database import UserDatabase
+from collections import defaultdict
+import time
 
 # Image enhancement libraries
 from PIL import Image, ImageEnhance, ImageFilter
@@ -68,6 +70,46 @@ CREDIT_PACKAGES = {
 UNLIMITED_SUBSCRIPTION = {
     'monthly': {'price': 29.00, 'name': 'Unlimited Premium', 'interval': 'month'},
 }
+
+# ============ SECURITY & RATE LIMITING ============
+# Protection against hackers and API abuse
+
+# Rate limiting storage (IP address → request timestamps)
+rate_limit_storage = defaultdict(list)
+
+# Rate limits
+RATE_LIMITS = {
+    'anonymous': {'requests': 10, 'window': 3600},  # 10 requests per hour for anonymous
+    'free_user': {'requests': 50, 'window': 3600},   # 50 requests per hour for free users
+    'premium_user': {'requests': 200, 'window': 3600},  # 200 requests per hour for premium
+    'unlimited_user': {'requests': 1000, 'window': 3600}  # 1000 requests per hour for unlimited
+}
+
+def get_client_ip():
+    """Get client IP address (works with proxies)"""
+    if request.headers.get('X-Forwarded-For'):
+        return request.headers.get('X-Forwarded-For').split(',')[0]
+    return request.remote_addr
+
+def check_rate_limit(user_type='anonymous'):
+    """Check if request exceeds rate limit"""
+    ip = get_client_ip()
+    current_time = time.time()
+    limit_config = RATE_LIMITS.get(user_type, RATE_LIMITS['anonymous'])
+    
+    # Clean old requests outside the time window
+    rate_limit_storage[ip] = [
+        timestamp for timestamp in rate_limit_storage[ip]
+        if current_time - timestamp < limit_config['window']
+    ]
+    
+    # Check if limit exceeded
+    if len(rate_limit_storage[ip]) >= limit_config['requests']:
+        return False, f"Rate limit exceeded. Max {limit_config['requests']} requests per hour for {user_type}."
+    
+    # Add current request
+    rate_limit_storage[ip].append(current_time)
+    return True, None
 
 # ⚠️ IMPORTANT: Replace the placeholder keys above with your actual API keys
 # Get keys from:
@@ -588,6 +630,33 @@ def generate_image():
     }
     """
     try:
+        # Check user authentication first
+        session_token = request.cookies.get('session_token')
+        user_id = None
+        user_type = 'anonymous'
+        
+        if session_token:
+            validation = user_db.validate_session(session_token)
+            if validation.get('valid'):
+                user_id = validation['user_id']
+                # Determine user type for rate limiting
+                credits_info = user_db.get_user_credits(user_id)
+                if credits_info.get('has_unlimited'):
+                    user_type = 'unlimited_user'
+                elif credits_info.get('premium_credits', 0) > 0:
+                    user_type = 'premium_user'
+                else:
+                    user_type = 'free_user'
+        
+        # Apply rate limiting
+        allowed, error_msg = check_rate_limit(user_type)
+        if not allowed:
+            return jsonify({
+                'success': False,
+                'error': error_msg,
+                'rate_limited': True
+            }), 429  # Too Many Requests
+        
         data = request.json
         prompt = data.get('prompt', '')
         negative_prompt = data.get('negative_prompt', '')
@@ -604,15 +673,6 @@ def generate_image():
         # Add style modifier to prompt if provided
         if style:
             prompt = f"{prompt}, {style}"
-        
-        # Check credits and route accordingly
-        session_token = request.cookies.get('session_token')
-        user_id = None
-        
-        if session_token:
-            validation = user_db.validate_session(session_token)
-            if validation.get('valid'):
-                user_id = validation['user_id']
         
         # Determine which engine to use based on credits
         if quality_tier == 'premium':

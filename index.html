@@ -347,12 +347,8 @@
                     <div class="prize-list">
                         <h3>Possible Prizes:</h3>
                         <div class="prizes-grid">
-                            <div class="prize-chip">🎬 Free Video Generation</div>
-                            <div class="prize-chip">🪙 50 Free Tokens</div>
-                            <div class="prize-chip">⭐ 25 Free Tokens</div>
-                            <div class="prize-chip">💎 10 Free Tokens</div>
-                            <div class="prize-chip">🎁 5 Free Tokens</div>
-                            <div class="prize-chip">🔄 Try Again</div>
+                            <div class="prize-chip" style="background: linear-gradient(135deg, #ec4899, #db2777);">🎬 Free Video (20% chance)</div>
+                            <div class="prize-chip" style="background: linear-gradient(135deg, #1e293b, #0f172a);">😢 No Win (80% chance)</div>
                         </div>
                     </div>
                 </div>
@@ -820,14 +816,10 @@
     
     <!-- Prize Wheel Script -->
     <script>
-        // Prize Wheel Configuration
+        // Prize Wheel Configuration - 20% win rate (1 in 5 chance)
         const prizes = [
-            { text: '🎬 FREE VIDEO', color: '#ec4899', value: 'free_video', weight: 5 },
-            { text: '🪙 50 TOKENS', color: '#fbbf24', value: '50_tokens', weight: 10 },
-            { text: '⭐ 25 TOKENS', color: '#8b5cf6', value: '25_tokens', weight: 15 },
-            { text: '💎 10 TOKENS', color: '#6366f1', value: '10_tokens', weight: 20 },
-            { text: '🎁 5 TOKENS', color: '#10b981', value: '5_tokens', weight: 30 },
-            { text: '🔄 TRY AGAIN', color: '#64748b', value: 'try_again', weight: 20 }
+            { text: '🎬 FREE VIDEO', color: '#ec4899', value: 'free_video', weight: 20 },
+            { text: '😢 NO WIN', color: '#1e293b', value: 'no_win', weight: 80 }
         ];
 
         let currentRotation = 0;
@@ -969,14 +961,10 @@
         function showPrizeModal(prize) {
             const messages = {
                 'free_video': '🎬 Congratulations! You won a FREE VIDEO generation!',
-                '50_tokens': '🪙 Amazing! You won 50 FREE TOKENS!',
-                '25_tokens': '⭐ Awesome! You won 25 FREE TOKENS!',
-                '10_tokens': '💎 Nice! You won 10 FREE TOKENS!',
-                '5_tokens': '🎁 Great! You won 5 FREE TOKENS!',
-                'try_again': '🔄 Better luck next time! Spin again tomorrow!'
+                'no_win': '😢 Better luck next time! Spin again in 24 hours!'
             };
             
-            const message = messages[prize.value] || 'You won a prize!';
+            const message = messages[prize.value] || 'Thanks for spinning!';
             
             // Create fancy modal
             const modal = document.createElement('div');
@@ -1010,7 +998,7 @@
                     font-weight: 600;
                     cursor: pointer;
                     margin-top: 1rem;
-                ">Awesome! 🎉</button>
+                ">${prize.value === 'no_win' ? 'Try Again Tomorrow' : 'Awesome! 🎉'}</button>
             `;
             
             document.body.appendChild(modal);

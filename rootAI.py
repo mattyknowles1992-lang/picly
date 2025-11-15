@@ -2638,12 +2638,12 @@ def spin_wheel():
         
         # Get prize value
         data = request.get_json()
-        prize = data.get('prize', 'try_again')
+        prize = data.get('prize', 'no_win')
         
         # Check if user has already spun today (optional server-side validation)
         # For now, we trust client-side localStorage, but you could add DB tracking
         
-        # Award prizes
+        # Award prizes - Only free_video wins, everything else is no_win
         tokens_awarded = 0
         
         if prize == 'free_video':
@@ -2651,23 +2651,7 @@ def spin_wheel():
             tokens_awarded = 50
             for _ in range(50):
                 user_db.add_credit(user_id, 'premium')
-        elif prize == '50_tokens':
-            tokens_awarded = 50
-            for _ in range(50):
-                user_db.add_credit(user_id, 'premium')
-        elif prize == '25_tokens':
-            tokens_awarded = 25
-            for _ in range(25):
-                user_db.add_credit(user_id, 'premium')
-        elif prize == '10_tokens':
-            tokens_awarded = 10
-            for _ in range(10):
-                user_db.add_credit(user_id, 'premium')
-        elif prize == '5_tokens':
-            tokens_awarded = 5
-            for _ in range(5):
-                user_db.add_credit(user_id, 'premium')
-        # 'try_again' awards nothing
+        # 'no_win' awards nothing
         
         # Get updated token count
         credits = user_db.get_user_credits(user_id)
@@ -2678,7 +2662,7 @@ def spin_wheel():
             'prize': prize,
             'tokens_awarded': tokens_awarded,
             'tokens': total_tokens,
-            'message': f'Prize awarded successfully!'
+            'message': f'Prize awarded successfully!' if tokens_awarded > 0 else 'Better luck next time!'
         })
         
     except Exception as e:

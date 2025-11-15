@@ -289,6 +289,21 @@
                     <span>No limits!</span>
                 </div>
             </div>
+
+            <!-- Notification Settings -->
+            <div class="notification-settings">
+                <h4>🔔 Low Token Notifications</h4>
+                <p class="settings-description">Get notified when your tokens run low (minimum 100 tokens)</p>
+                <div class="settings-row">
+                    <label for="tokenThreshold">Alert me when tokens fall below:</label>
+                    <div class="threshold-input-group">
+                        <input type="number" id="tokenThreshold" min="100" max="1000" step="50" value="300">
+                        <span class="input-suffix">tokens</span>
+                        <button class="save-settings-btn" onclick="saveNotificationSettings()">Save</button>
+                    </div>
+                </div>
+                <p class="settings-note">⚠️ Critical alert at 100 tokens is always active</p>
+            </div>
         </div>
     </div>
 

@@ -35,6 +35,8 @@ class UserDatabase:
                 subscription_status TEXT DEFAULT 'none',
                 subscription_id TEXT,
                 subscription_expires_at TIMESTAMP,
+                low_token_threshold INTEGER DEFAULT 300,
+                low_token_notified BOOLEAN DEFAULT 0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 last_login TIMESTAMP,
                 FOREIGN KEY (referred_by) REFERENCES users (id)
@@ -524,3 +526,108 @@ class UserDatabase:
             
         except Exception as e:
             return {'success': False, 'error': str(e)}
+    
+    def check_low_token_alert(self, user_id):
+        """Check if user needs low token notification"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                SELECT premium_credits, free_credits_today, low_token_threshold, 
+                       low_token_notified, subscription_status
+                FROM users WHERE id = ?
+            ''', (user_id,))
+            
+            result = cursor.fetchone()
+            if not result:
+                conn.close()
+                return {'needs_alert': False}
+            
+            premium, free, threshold, notified, sub_status = result
+            
+            # Don't alert unlimited users
+            if sub_status == 'active':
+                conn.close()
+                return {'needs_alert': False}
+            
+            total_tokens = premium + free
+            
+            # Mandatory alert at 100 tokens or custom threshold
+            critical_alert = total_tokens <= 100 and not notified
+            custom_alert = total_tokens <= threshold and total_tokens > 100 and not notified
+            
+            if critical_alert or custom_alert:
+                # Mark as notified
+                cursor.execute('''
+                    UPDATE users SET low_token_notified = 1 WHERE id = ?
+                ''', (user_id,))
+                conn.commit()
+                conn.close()
+                
+                return {
+                    'needs_alert': True,
+                    'total_tokens': total_tokens,
+                    'threshold': threshold,
+                    'is_critical': critical_alert
+                }
+            
+            # Reset notification flag if tokens go above threshold
+            if total_tokens > threshold and notified:
+                cursor.execute('''
+                    UPDATE users SET low_token_notified = 0 WHERE id = ?
+                ''', (user_id,))
+                conn.commit()
+            
+            conn.close()
+            return {'needs_alert': False}
+            
+        except Exception as e:
+            return {'needs_alert': False, 'error': str(e)}
+    
+    def update_token_threshold(self, user_id, new_threshold):
+        """Update user's custom low token notification threshold"""
+        try:
+            # Validate threshold (minimum 100, maximum 1000)
+            if new_threshold < 100:
+                new_threshold = 100
+            elif new_threshold > 1000:
+                new_threshold = 1000
+            
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                UPDATE users 
+                SET low_token_threshold = ?, low_token_notified = 0
+                WHERE id = ?
+            ''', (new_threshold, user_id))
+            
+            conn.commit()
+            conn.close()
+            
+            return {'success': True, 'threshold': new_threshold}
+            
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
+    
+    def get_notification_preferences(self, user_id):
+        """Get user's notification preferences"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                SELECT low_token_threshold FROM users WHERE id = ?
+            ''', (user_id,))
+            
+            result = cursor.fetchone()
+            conn.close()
+            
+            if result:
+                return {'success': True, 'threshold': result[0]}
+            return {'success': False, 'error': 'User not found'}
+            
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
+

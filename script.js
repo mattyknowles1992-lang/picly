@@ -257,10 +257,36 @@ async function updateCredits() {
                 const totalTokens = (data.free_credits || 0) + (data.premium_credits || 0);
                 totalTokensElement.textContent = totalTokens;
             }
+            
+            // Check for low token alerts
+            if (data.low_token_alert && data.low_token_alert.needs_alert) {
+                showLowTokenAlert(data.low_token_alert);
+            }
         }
     } catch (error) {
         console.error('Error fetching credits:', error);
     }
+}
+
+// Show low token notification
+function showLowTokenAlert(alertData) {
+    const isCritical = alertData.is_critical;
+    const tokens = alertData.total_tokens;
+    const threshold = alertData.threshold;
+    
+    let message = '';
+    let icon = '⚠️';
+    
+    if (isCritical) {
+        icon = '🚨';
+        message = `CRITICAL: You only have ${tokens} tokens remaining! `;
+    } else {
+        message = `Low token warning: You have ${tokens} tokens remaining (below your ${threshold} token threshold). `;
+    }
+    
+    message += '<a href="#" onclick="openBuyCreditsModal(); return false;" style="color: #a78bfa; text-decoration: underline;">Buy more tokens</a> or adjust your notification settings.';
+    
+    showNotification(icon + ' ' + message, isCritical ? 'error' : 'warning', 10000);
 }
 
 // ============================================
@@ -1495,6 +1521,11 @@ async function checkCredits() {
                 totalTokensElement.textContent = totalTokens;
             }
             
+            // Check for low token alerts
+            if (data.low_token_alert && data.low_token_alert.needs_alert) {
+                showLowTokenAlert(data.low_token_alert);
+            }
+            
             // Show unlimited badge if user has subscription
             const unlimitedBadge = document.getElementById('unlimitedBadge');
             if (data.has_unlimited) {
@@ -1554,10 +1585,58 @@ function hideAds() {
 const buyCreditsModal = document.getElementById('buyCreditsModal');
 const buyCreditsBtn = document.getElementById('buyCreditsBtn');
 
-if (buyCreditsBtn) {
-    buyCreditsBtn.addEventListener('click', () => {
+function openBuyCreditsModal() {
+    if (buyCreditsModal) {
         buyCreditsModal.classList.add('show');
-    });
+        loadNotificationSettings();
+    }
+}
+
+if (buyCreditsBtn) {
+    buyCreditsBtn.addEventListener('click', openBuyCreditsModal);
+}
+
+// Load and display notification settings
+async function loadNotificationSettings() {
+    try {
+        const response = await fetch('/api/notifications/preferences', {
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            const thresholdInput = document.getElementById('tokenThreshold');
+            if (thresholdInput && data.threshold) {
+                thresholdInput.value = data.threshold;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading notification settings:', error);
+    }
+}
+
+// Save notification settings
+async function saveNotificationSettings() {
+    try {
+        const thresholdInput = document.getElementById('tokenThreshold');
+        const threshold = parseInt(thresholdInput.value) || 300;
+        
+        const response = await fetch('/api/notifications/preferences', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ threshold })
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            showNotification(`✅ Notification threshold updated to ${data.threshold} tokens`);
+        } else {
+            showNotification('Failed to update notification settings', 'error');
+        }
+    } catch (error) {
+        showNotification('Error saving settings: ' + error.message, 'error');
+    }
 }
 
 // Handle credit package purchase

@@ -425,6 +425,11 @@ def get_credit_balance():
         user_id = validation['user_id']
         result = user_db.get_user_credits(user_id)
         
+        # Check if low token alert is needed
+        if result.get('success'):
+            alert_check = user_db.check_low_token_alert(user_id)
+            result['low_token_alert'] = alert_check
+        
         return jsonify(result)
         
     except Exception as e:
@@ -440,6 +445,51 @@ def get_credit_packages():
         'unlimited': UNLIMITED_SUBSCRIPTION,
         'stripe_publishable_key': CONFIG['STRIPE_PUBLISHABLE_KEY']
     })
+
+
+@app.route('/api/notifications/preferences', methods=['GET'])
+def get_notification_preferences():
+    """Get user's notification preferences"""
+    try:
+        session_token = request.cookies.get('session_token')
+        if not session_token:
+            return jsonify({'success': False, 'error': 'Must be logged in'}), 401
+        
+        validation = user_db.validate_session(session_token)
+        if not validation.get('valid'):
+            return jsonify({'success': False, 'error': 'Invalid session'}), 401
+        
+        user_id = validation['user_id']
+        result = user_db.get_notification_preferences(user_id)
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/notifications/preferences', methods=['POST'])
+def update_notification_preferences():
+    """Update user's notification threshold"""
+    try:
+        session_token = request.cookies.get('session_token')
+        if not session_token:
+            return jsonify({'success': False, 'error': 'Must be logged in'}), 401
+        
+        validation = user_db.validate_session(session_token)
+        if not validation.get('valid'):
+            return jsonify({'success': False, 'error': 'Invalid session'}), 401
+        
+        user_id = validation['user_id']
+        data = request.json
+        new_threshold = data.get('threshold', 300)
+        
+        result = user_db.update_token_threshold(user_id, new_threshold)
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @app.route('/api/subscription/create', methods=['POST'])

@@ -2888,6 +2888,86 @@ html {
     border-bottom: none;
 }
 
+/* Notification Settings */
+.notification-settings {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, rgba(168, 139, 250, 0.1), rgba(236, 72, 153, 0.1));
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+}
+
+.notification-settings h4 {
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+}
+
+.settings-description {
+    margin-bottom: 1.5rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.settings-row {
+    margin-bottom: 1rem;
+}
+
+.settings-row label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.threshold-input-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.threshold-input-group input[type="number"] {
+    flex: 1;
+    max-width: 150px;
+    padding: 0.75rem;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 1rem;
+}
+
+.threshold-input-group .input-suffix {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.save-settings-btn {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #a78bfa, #ec4899);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.save-settings-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(168, 139, 250, 0.4);
+}
+
+.settings-note {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: rgba(236, 72, 153, 0.1);
+    border-left: 3px solid #ec4899;
+    border-radius: 4px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
 /* ============================================
    AD MONETIZATION
    ============================================ */

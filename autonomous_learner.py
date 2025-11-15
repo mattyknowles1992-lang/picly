@@ -687,6 +687,47 @@ class AutonomousLearner:
         
         conn.commit()
         conn.close()
+    
+    def get_stats(self):
+        """Get comprehensive learning statistics"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        # Total prompts harvested
+        cursor.execute('SELECT COUNT(*) FROM harvested_prompts')
+        total_prompts = cursor.fetchone()[0]
+        
+        # Total patterns discovered
+        cursor.execute('SELECT COUNT(*) FROM prompt_patterns')
+        total_patterns = cursor.fetchone()[0]
+        
+        # Quality indicators
+        cursor.execute('SELECT COUNT(*) FROM quality_indicators')
+        quality_indicators = cursor.fetchone()[0]
+        
+        # Trending patterns (last 7 days)
+        cursor.execute('''SELECT COUNT(*) FROM trending_patterns 
+                         WHERE last_seen >= datetime('now', '-7 days')''')
+        trending = cursor.fetchone()[0]
+        
+        conn.close()
+        
+        return {
+            'total_prompts': total_prompts,
+            'total_patterns': total_patterns,
+            'quality_indicators': quality_indicators,
+            'trending_patterns': trending,
+            'learning_active': self.learning_active
+        }
+    
+    def get_total_patterns_count(self):
+        """Get total number of patterns in learning database"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        cursor.execute('SELECT COUNT(*) FROM prompt_patterns')
+        count = cursor.fetchone()[0]
+        conn.close()
+        return count
 
 # Initialize global learner
 autonomous_learner = AutonomousLearner()

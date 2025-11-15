@@ -2910,8 +2910,10 @@ def get_rating_analytics():
 # ============ SOCIAL MEDIA CONTENT CREATOR ROUTES ============
 
 from social_content_creator import SocialContentCreator, estimate_monthly_costs
+from intelligent_social_system import IntelligentSocialSystem
 
 social_creator = SocialContentCreator()
+intelligent_system = IntelligentSocialSystem()
 
 @app.route('/social-content')
 def social_content_dashboard():
@@ -2919,9 +2921,22 @@ def social_content_dashboard():
     return render_template('social_content_dashboard.html')
 
 
+@app.route('/api/social-content/system-status', methods=['GET'])
+def get_system_status():
+    """Get intelligent system status - shows both content and learning systems"""
+    try:
+        status = intelligent_system.get_system_status()
+        return jsonify({
+            'success': True,
+            'status': status
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/api/social-content/generate', methods=['POST'])
 def generate_social_content():
-    """Generate AI-optimized content for social media platforms"""
+    """Generate AI-optimized content using intelligent system (with learnings)"""
     try:
         # Check authentication
         auth_header = request.headers.get('Authorization', '')
@@ -2948,10 +2963,9 @@ def generate_social_content():
         if not topic:
             return jsonify({'success': False, 'error': 'Topic required'}), 400
         
-        # Generate content
-        content = social_creator.generate_content(
+        # Use intelligent system to generate content with learned insights
+        content = intelligent_system.generate_intelligent_content(
             topic=topic,
-            content_type=content_type,
             platforms=platforms,
             language=language,
             quality=quality
@@ -2984,7 +2998,8 @@ def generate_social_content():
         return jsonify({
             'success': True,
             'content': content,
-            'message': 'Content generated successfully'
+            'message': 'Intelligent content generated successfully',
+            'used_ai_learnings': True
         })
         
     except Exception as e:

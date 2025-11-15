@@ -780,7 +780,16 @@ body {
     align-items: start;
 }
 
+/* Mobile-specific controls layout */
+@media (max-width: 767px) {
+    .controls-grid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+}
+
 .controls-grid select {
+    width: 100%;
     padding: 1rem 1.25rem;
     background: rgba(0, 0, 0, 0.5);
     border: 1px solid var(--glass-border);
@@ -827,20 +836,38 @@ body {
     align-items: center;
     gap: 0.75rem;
     cursor: pointer;
-    padding: 0.75rem;
+    padding: 0.75rem 1rem;
     border-radius: 8px;
     transition: var(--transition);
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid var(--glass-border);
+    min-height: 50px;
 }
 
 .checkbox-label:hover {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(99, 102, 241, 0.1);
+    border-color: var(--primary);
 }
 
 .checkbox-label input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     cursor: pointer;
     accent-color: var(--primary);
+    flex-shrink: 0;
+}
+
+@media (max-width: 767px) {
+    .checkbox-label {
+        padding: 1rem;
+        font-size: 0.95rem;
+        min-height: 54px;
+    }
+    
+    .checkbox-label input[type="checkbox"] {
+        width: 24px;
+        height: 24px;
+    }
 }
 
 /* Generate Button */
@@ -2253,14 +2280,20 @@ body {
     
     .controls-grid {
         grid-template-columns: 1fr;
-        gap: 1rem;
+        gap: 0.75rem;
+    }
+    
+    .controls-grid select {
+        padding: 1rem;
+        font-size: 0.95rem;
+        min-height: 54px;
     }
     
     .form-group input,
     .form-group textarea,
     .form-group select {
-        padding: 0.9rem;
-        font-size: 0.9rem;
+        padding: 1rem;
+        font-size: 0.95rem;
     }
     
     #promptInput {

@@ -845,7 +845,7 @@ async function generateImage() {
     // Show progress bar
     const progressContainer = document.getElementById('progressContainer');
     const progressFill = document.getElementById('progressFill');
-    const progressPercent = document.getElementById('progressPercent');
+    const progressPercentEl = document.getElementById('progressPercent');
     const progressMessage = document.getElementById('progressMessage');
     const progressStep = document.getElementById('progressStep');
     const progressTime = document.getElementById('progressTime');
@@ -858,62 +858,33 @@ async function generateImage() {
     // Start progress monitoring
     let startTime = Date.now();
     
-    const updateProgress = async () => {
-        try {
-            const progressResponse = await fetch('http://localhost:5000/api/progress');
-            const reader = progressResponse.body.getReader();
-            const decoder = new TextDecoder();
-            
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-                
-                const chunk = decoder.decode(value);
-                const lines = chunk.split('\n');
-                
-                for (const line of lines) {
-                    if (line.startsWith('data: ')) {
-                        const data = JSON.parse(line.slice(6));
-                        const percent = Math.round((data.step / data.total) * 100);
-                        
-                        progressFill.style.width = percent + '%';
-                        progressPercent.textContent = percent + '%';
-                        progressMessage.textContent = data.message || 'Generating your image...';
-                        progressStep.textContent = `Step ${data.step}/${data.total}`;
-                        
-                        const elapsed = Math.round((Date.now() - startTime) / 1000);
-                        const estimated = data.step > 0 ? Math.round((elapsed / data.step) * (data.total - data.step)) : 30;
-                        progressTime.textContent = `Elapsed: ${elapsed}s | Est. remaining: ${estimated}s`;
-                        
-                        if (data.status === 'completed' || data.status === 'error') {
-                            reader.cancel();
-                            break;
-                        }
-                    }
-                }
-            }
-        } catch (error) {
-            console.error('Progress update error:', error);
+    // Simple progress animation (no SSE needed)
+    let progressValue = 0;
+    const progressInterval = setInterval(() => {
+        if (progressValue < 90) {
+            progressValue += Math.random() * 10;
+            if (progressValue > 90) progressValue = 90;
+            progressFill.style.width = progressValue + '%';
+            progressPercentEl.textContent = Math.round(progressValue) + '%';
         }
-    };
-    
-    // Start progress updates
-    updateProgress();
+    }, 500);
     
     try {
         const dimensions = getDimensions(ratio, engine);
         const upscale = parseInt(upscaleSelect.value);
+        const qualityTier = document.getElementById('qualityTier').value;
         
-        // Call local AI backend (free!)
-        const response = await fetch('http://localhost:5000/api/generate', {
+        // Call AI backend
+        const response = await fetch('/api/generate', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
+            credentials: 'include',
             body: JSON.stringify({
                 prompt: prompt,
                 negative_prompt: negative,
-                engine: engine,
+                quality_tier: qualityTier,
                 style: styleSelect.value,
                 dimensions: dimensions,
                 quality_boost: qualityBoost.checked,
@@ -923,6 +894,11 @@ async function generateImage() {
         });
         
         const data = await response.json();
+        
+        // Stop progress animation
+        clearInterval(progressInterval);
+        progressFill.style.width = '100%';
+        progressPercentEl.textContent = '100%';
         
         // Hide progress bar and show image
         progressContainer.style.display = 'none';
@@ -973,16 +949,18 @@ async function generateImage() {
         
     } catch (error) {
         console.error('Error:', error);
+        clearInterval(progressInterval);
+        progressContainer.style.display = 'none';
         generatedImage.classList.remove('loading');
         generatedImage.innerHTML = `
             <div style="width: 100%; height: 400px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #dc2626; padding: 20px; text-align: center;">
                 <div style="font-size: 3rem; margin-bottom: 20px;">⚠️</div>
                 <p style="font-size: 1.1rem; font-weight: 600; margin-bottom: 10px;">Generation Failed</p>
                 <p style="font-size: 0.9rem;">${error.message}</p>
-                <p style="font-size: 0.85rem; margin-top: 10px; color: #666;">Make sure the backend server is running</p>
+                <p style="font-size: 0.85rem; margin-top: 10px; color: #666;">Check your connection and try again</p>
             </div>
         `;
-        showNotification('Error: ' + error.message);
+        showNotification('Error: ' + error.message, 'error');
     } finally {
         generateBtn.disabled = false;
         generateBtn.textContent = 'Generate High-Quality Image';

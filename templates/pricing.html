@@ -584,7 +584,11 @@
             <!-- User Plan -->
             <div class="pricing-card">
                 <div class="plan-name">User</div>
-                <div class="plan-price">£9.99<span>/month</span></div>
+                <div class="plan-price">
+                    <span class="price-monthly">£9.99<span>/month</span></span>
+                    <span class="price-annual" style="display: none;">£7.99<span>/month</span></span>
+                </div>
+                <div class="plan-billing" style="display: none; font-size: 0.875rem; color: #94a3b8; margin-top: 0.5rem;">Billed £95.88 annually</div>
                 <div class="plan-description">Great for content creators</div>
                 <ul class="plan-features">
                     <li><strong>Unlimited</strong> Flux & SDXL images</li>
@@ -596,13 +600,17 @@
                     <li>Priority queue</li>
                     <li>HD downloads</li>
                 </ul>
-                <a href="/signup?plan=user" class="plan-cta primary">Get Started</a>
+                <a href="/signup?plan=user" class="plan-cta primary" data-plan="user">Get Started</a>
             </div>
 
             <!-- Creator Plan - Featured -->
             <div class="pricing-card featured">
                 <div class="plan-name">Creator</div>
-                <div class="plan-price">£17.99<span>/month</span></div>
+                <div class="plan-price">
+                    <span class="price-monthly">£17.99<span>/month</span></span>
+                    <span class="price-annual" style="display: none;">£14.39<span>/month</span></span>
+                </div>
+                <div class="plan-billing" style="display: none; font-size: 0.875rem; color: #94a3b8; margin-top: 0.5rem;">Billed £172.68 annually</div>
                 <div class="plan-description">For professional creators</div>
                 <ul class="plan-features">
                     <li><strong>Everything in User</strong></li>
@@ -614,13 +622,17 @@
                     <li>Batch generation</li>
                     <li>Custom watermark</li>
                 </ul>
-                <a href="/signup?plan=creator" class="plan-cta primary">Start Creating</a>
+                <a href="/signup?plan=creator" class="plan-cta primary" data-plan="creator">Start Creating</a>
             </div>
 
             <!-- Pro Plan -->
             <div class="pricing-card">
                 <div class="plan-name">Pro</div>
-                <div class="plan-price">£32.00<span>/month</span></div>
+                <div class="plan-price">
+                    <span class="price-monthly">£32.00<span>/month</span></span>
+                    <span class="price-annual" style="display: none;">£25.60<span>/month</span></span>
+                </div>
+                <div class="plan-billing" style="display: none; font-size: 0.875rem; color: #94a3b8; margin-top: 0.5rem;">Billed £307.20 annually</div>
                 <div class="plan-description">For agencies & production teams</div>
                 <ul class="plan-features">
                     <li><strong>Everything in Creator</strong></li>
@@ -634,7 +646,7 @@
                     <li>Custom branding</li>
                     <li>Dedicated support</li>
                 </ul>
-                <a href="/signup?plan=pro" class="plan-cta primary">Go Pro</a>
+                <a href="/signup?plan=pro" class="plan-cta primary" data-plan="pro">Go Pro</a>
             </div>
         </div>
 
@@ -645,9 +657,9 @@
                 <thead>
                     <tr>
                         <th>Feature</th>
-                        <th>User<br/>£9.99</th>
-                        <th>Creator<br/>£17.99</th>
-                        <th>Pro<br/>£32.00</th>
+                        <th>User<br/><span class="price-monthly">£9.99</span><span class="price-annual" style="display: none;">£7.99</span></th>
+                        <th>Creator<br/><span class="price-monthly">£17.99</span><span class="price-annual" style="display: none;">£14.39</span></th>
+                        <th>Pro<br/><span class="price-monthly">£32.00</span><span class="price-annual" style="display: none;">£25.60</span></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -856,14 +868,39 @@
     <script>
         // Pricing toggle functionality
         const toggleButtons = document.querySelectorAll('.toggle-btn');
+        let isAnnual = false;
+        
         toggleButtons.forEach(btn => {
             btn.addEventListener('click', function() {
                 toggleButtons.forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
-                // Note: Annual pricing coming soon - currently shows same prices
-                if (this.textContent.includes('Annual')) {
-                    alert('Annual pricing coming soon! You\'ll save 20% when we launch annual plans.');
-                }
+                
+                isAnnual = this.textContent.includes('Annual');
+                
+                // Toggle price displays
+                const monthlyPrices = document.querySelectorAll('.price-monthly');
+                const annualPrices = document.querySelectorAll('.price-annual');
+                const billingTexts = document.querySelectorAll('.plan-billing');
+                
+                monthlyPrices.forEach(el => {
+                    el.style.display = isAnnual ? 'none' : 'inline';
+                });
+                
+                annualPrices.forEach(el => {
+                    el.style.display = isAnnual ? 'inline' : 'none';
+                });
+                
+                billingTexts.forEach(el => {
+                    el.style.display = isAnnual ? 'block' : 'none';
+                });
+                
+                // Update CTA links to include billing period
+                const ctaLinks = document.querySelectorAll('.plan-cta[data-plan]');
+                ctaLinks.forEach(link => {
+                    const plan = link.getAttribute('data-plan');
+                    const billing = isAnnual ? 'annual' : 'monthly';
+                    link.href = `/signup?plan=${plan}&billing=${billing}`;
+                });
             });
         });
 

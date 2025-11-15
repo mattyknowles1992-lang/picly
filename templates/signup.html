@@ -355,25 +355,33 @@
     </div>
 
     <script>
-        // Get plan from URL parameter
+        // Get plan and billing from URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const plan = urlParams.get('plan');
+        const billing = urlParams.get('billing') || 'monthly';
+        const isAnnual = billing === 'annual';
         
         // Plan details
         const planDetails = {
             'user': {
                 name: 'User Plan',
-                price: '£9.99/month',
+                monthlyPrice: '£9.99/month',
+                annualPrice: '£7.99/month',
+                annualTotal: '£95.88/year',
                 features: ['Unlimited Flux & SDXL images', '1050 tokens/month', '30 cartoon videos', 'Commercial license']
             },
             'creator': {
                 name: 'Creator Plan',
-                price: '£17.99/month',
+                monthlyPrice: '£17.99/month',
+                annualPrice: '£14.39/month',
+                annualTotal: '£172.68/year',
                 features: ['Everything in User', '1950 tokens/month', '55 cartoon videos', '15% token discount']
             },
             'pro': {
                 name: 'Pro Plan',
-                price: '£32.00/month',
+                monthlyPrice: '£32.00/month',
+                annualPrice: '£25.60/month',
+                annualTotal: '£307.20/year',
                 features: ['Everything in Creator', '3500 tokens/month', '100 cartoon videos', 'Priority support']
             }
         };
@@ -381,12 +389,17 @@
         // Display plan info
         if (plan && planDetails[plan]) {
             const planInfo = planDetails[plan];
+            const displayPrice = isAnnual ? planInfo.annualPrice : planInfo.monthlyPrice;
+            const billingText = isAnnual ? ` (billed ${planInfo.annualTotal})` : '';
+            const savingsText = isAnnual ? '<div style="color: #10b981; font-size: 0.875rem; margin-top: 0.5rem;">✨ Save 20% with annual billing!</div>' : '';
+            
             document.getElementById('planInfo').innerHTML = `
                 <div class="plan-badge">
-                    Selected: ${planInfo.name} - ${planInfo.price}
+                    Selected: ${planInfo.name} - ${displayPrice}${billingText}
+                    ${savingsText}
                 </div>
             `;
-            document.getElementById('selectedPlan').value = plan;
+            document.getElementById('selectedPlan').value = `${plan}-${billing}`;
         }
 
         // Handle form submission
@@ -453,8 +466,8 @@
                                     password: password
                                 })
                             }).then(() => {
-                                // Redirect to pricing/checkout
-                                window.location.href = `/pricing?plan=${plan}`;
+                                // Redirect to pricing/checkout with plan and billing
+                                window.location.href = `/pricing?plan=${plan}&billing=${billing}`;
                             });
                         } else {
                             window.location.href = '/';

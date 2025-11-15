@@ -2049,11 +2049,6 @@ def generate_video():
 
 # ============ ADMIN DASHBOARD - COST MONITORING ============
 
-@app.route('/admin/dashboard')
-def admin_dashboard():
-    """Serve admin cost monitoring dashboard"""
-    return render_template('admin_dashboard.html')
-
 @app.route('/api/admin/cost-stats', methods=['GET'])
 def get_cost_stats():
     """Get real-time cost and revenue statistics (admin only)"""

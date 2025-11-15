@@ -2545,6 +2545,68 @@ def generate_video_runway(image_path, prompt, duration=5):
         return {'success': False, 'error': f'Unexpected error: {str(e)}'}
 
 
+@app.route('/api/generate-video-preview', methods=['POST'])
+def generate_video_preview():
+    """Generate FREE preview image for video - first frame only, best quality, no credits used"""
+    try:
+        # Check authentication
+        auth_header = request.headers.get('Authorization', '')
+        if not auth_header.startswith('Bearer '):
+            return jsonify({'success': False, 'error': 'Must be logged in'}), 401
+        
+        token = auth_header.replace('Bearer ', '')
+        session_token = token  # Use the token from header
+        
+        validation = user_db.validate_session(session_token)
+        if not validation.get('valid'):
+            return jsonify({'success': False, 'error': 'Invalid session'}), 401
+        
+        user_id = validation['user_id']
+        
+        # Get request data
+        data = request.get_json()
+        prompt = data.get('prompt', '')
+        quality = data.get('quality', 'cartoon')
+        
+        if not prompt:
+            return jsonify({'success': False, 'error': 'Prompt required'}), 400
+        
+        # Generate single preview image using BEST FREE option (Flux Schnell)
+        # This gives users a high-quality preview without using credits
+        enhanced_prompt = f"{prompt}, first frame, cinematic still, high quality"
+        
+        # Use Flux Schnell - best free option, fast generation
+        result = generate_image_flux_schnell(enhanced_prompt)
+        
+        if result.get('success'):
+            # NO CREDITS DEDUCTED - This is free preview
+            preview_url = result.get('image_url')
+            
+            # Log the preview generation (for analytics, no cost)
+            cost_monitor.log_api_cost(
+                user_id=user_id,
+                api_service='flux_schnell',
+                operation='video_preview',
+                cost=0.0,  # Free
+                success=True
+            )
+            
+            return jsonify({
+                'success': True,
+                'preview_url': preview_url,
+                'message': 'Preview generated - no credits used',
+                'credits_used': 0
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': result.get('error', 'Failed to generate preview')
+            }), 500
+            
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/api/generate-video', methods=['POST'])
 def generate_video():
     """Generate video from image using premium AI"""

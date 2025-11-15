@@ -520,6 +520,73 @@
             white-space: nowrap;
         }
 
+        /* Preview Image Styles */
+        .preview-header {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .preview-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            width: fit-content;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .preview-info {
+            color: #94a3b8;
+            font-size: 0.875rem;
+            font-style: italic;
+        }
+
+        .preview-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .action-btn-primary {
+            flex: 2;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+            color: white !important;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .action-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .action-btn-secondary {
+            flex: 1;
+            background: rgba(148, 163, 184, 0.1) !important;
+            color: #94a3b8 !important;
+        }
+
+        .action-btn-secondary:hover {
+            background: rgba(148, 163, 184, 0.2) !important;
+            color: #e2e8f0 !important;
+        }
+
+        #previewImageContainer {
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
         /* Mobile Responsive */
         @media (max-width: 768px) {
             .nav-container {
@@ -643,6 +710,24 @@
                     <div class="preview-icon">🎬</div>
                     <div class="preview-text">Your video will appear here</div>
                 </div>
+                
+                <!-- Preview Image Container -->
+                <div id="previewImageContainer" style="display: none;">
+                    <div class="preview-header">
+                        <div class="preview-badge">📸 FREE PREVIEW</div>
+                        <div class="preview-info">First frame preview - Full video will match this quality</div>
+                    </div>
+                    <img id="previewImage" alt="Video preview" style="width: 100%; border-radius: 12px; margin: 16px 0;">
+                    <div class="preview-actions">
+                        <button class="action-btn action-btn-primary" onclick="confirmAndGenerateVideo()">
+                            <span>✅</span> Looks Good - Generate Full Video
+                        </button>
+                        <button class="action-btn action-btn-secondary" onclick="cancelPreview()">
+                            <span>✏️</span> Edit Prompt
+                        </button>
+                    </div>
+                </div>
+                
                 <div id="videoContainer" style="display: none;">
                     <video id="videoPlayer" controls autoplay loop></video>
                     <div class="video-actions">
@@ -765,11 +850,91 @@
             const token = localStorage.getItem('authToken');
             const generateBtn = document.getElementById('generateBtn');
             const loadingOverlay = document.getElementById('loadingOverlay');
+            const loadingText = document.querySelector('.loading-text');
+            const loadingSubtext = document.querySelector('.loading-subtext');
 
             generateBtn.disabled = true;
             loadingOverlay.classList.add('active');
+            loadingText.textContent = 'Generating FREE preview...';
+            loadingSubtext.textContent = 'Creating first frame preview (no credits used)';
 
             try {
+                // Step 1: Generate preview image (free, best quality)
+                const previewResponse = await fetch('/api/generate-video-preview', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        prompt: prompt,
+                        quality: selectedQuality,
+                        duration: selectedDuration
+                    })
+                });
+
+                const previewData = await previewResponse.json();
+
+                if (previewData.success) {
+                    // Hide loading, show preview
+                    loadingOverlay.classList.remove('active');
+                    displayPreview(previewData.preview_url, prompt);
+                } else {
+                    alert(previewData.error || 'Failed to generate preview');
+                    loadingOverlay.classList.remove('active');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to generate preview. Please try again.');
+                loadingOverlay.classList.remove('active');
+            } finally {
+                generateBtn.disabled = false;
+            }
+        }
+
+        function displayPreview(previewUrl, prompt) {
+            const placeholder = document.getElementById('previewPlaceholder');
+            const previewContainer = document.getElementById('previewImageContainer');
+            const previewImage = document.getElementById('previewImage');
+            const videoContainer = document.getElementById('videoContainer');
+
+            // Hide placeholder and video, show preview
+            placeholder.style.display = 'none';
+            videoContainer.style.display = 'none';
+            previewContainer.style.display = 'block';
+            
+            previewImage.src = previewUrl;
+            previewImage.dataset.prompt = prompt;
+        }
+
+        function cancelPreview() {
+            const placeholder = document.getElementById('previewPlaceholder');
+            const previewContainer = document.getElementById('previewImageContainer');
+
+            // Reset to placeholder
+            previewContainer.style.display = 'none';
+            placeholder.style.display = 'flex';
+            
+            // Optionally scroll to prompt
+            document.getElementById('videoPrompt').focus();
+        }
+
+        async function confirmAndGenerateVideo() {
+            const prompt = document.getElementById('videoPrompt').value.trim();
+            const token = localStorage.getItem('authToken');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const loadingText = document.querySelector('.loading-text');
+            const loadingSubtext = document.querySelector('.loading-subtext');
+            const previewContainer = document.getElementById('previewImageContainer');
+
+            // Hide preview, show loading
+            previewContainer.style.display = 'none';
+            loadingOverlay.classList.add('active');
+            loadingText.textContent = 'Generating your full video...';
+            loadingSubtext.textContent = 'This may take 60-90 seconds';
+
+            try {
+                // Step 2: Generate full video (uses credits)
                 const response = await fetch('/api/generate-video', {
                     method: 'POST',
                     headers: {
@@ -793,12 +958,16 @@
                     loadGallery();
                 } else {
                     alert(data.error || 'Failed to generate video');
+                    // Show preview again if failed
+                    loadingOverlay.classList.remove('active');
+                    previewContainer.style.display = 'block';
                 }
             } catch (error) {
                 console.error('Error:', error);
                 alert('Failed to generate video. Please try again.');
+                loadingOverlay.classList.remove('active');
+                previewContainer.style.display = 'block';
             } finally {
-                generateBtn.disabled = false;
                 loadingOverlay.classList.remove('active');
             }
         }

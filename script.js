@@ -1093,30 +1093,30 @@ async function editImage() {
         return;
     }
     
-    const editType = document.querySelector('input[name="editType"]:checked')?.value;
-    if (!editType) {
-        alert('Please select an edit type!');
+    const editMode = document.querySelector('input[name="editMode"]:checked')?.value;
+    if (!editMode) {
+        alert('Please select an edit mode!');
         return;
     }
     
     editBtn.disabled = true;
     editBtn.textContent = 'Processing...';
     
-    const editResult = document.getElementById('editResult');
-    editResult.innerHTML = `
+    const editedImage = document.getElementById('editedImage');
+    editedImage.innerHTML = `
         <div style="text-align: center; padding: 60px 20px;">
             <div class="loading-spinner" style="width: 50px; height: 50px; margin: 0 auto 20px;"></div>
-            <p style="color: #666;">Processing your image...</p>
+            <p style="color: #cbd5e1;">Processing your image...</p>
         </div>
     `;
     
     try {
         const formData = new FormData();
         formData.append('image', uploadedImageFile);
-        formData.append('editType', editType);
+        formData.append('editMode', editMode);
         
-        if (editType === 'enhance') {
-            const prompt = document.getElementById('enhancePrompt')?.value || '';
+        if (editMode === 'edit') {
+            const prompt = document.getElementById('editPrompt')?.value || '';
             formData.append('prompt', prompt);
         }
         
@@ -1128,7 +1128,7 @@ async function editImage() {
         const data = await response.json();
         
         if (data.success) {
-            editResult.innerHTML = `
+            editedImage.innerHTML = `
                 <div class="generated-image" style="text-align: center;">
                     <img src="${data.image_url}" alt="Edited Image" style="max-width: 100%; height: auto; max-height: 800px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.3);">
                     <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
@@ -1143,17 +1143,17 @@ async function editImage() {
             throw new Error(data.error || 'Failed to edit image');
         }
     } catch (error) {
-        editResult.innerHTML = `
+        editedImage.innerHTML = `
             <div style="text-align: center; padding: 60px 20px; color: #e74c3c;">
                 <div style="font-size: 3rem; margin-bottom: 20px;">⚠️</div>
                 <p style="font-size: 1.1rem; font-weight: 600; margin-bottom: 10px;">Edit Failed</p>
                 <p style="font-size: 0.9rem;">${error.message}</p>
             </div>
         `;
-        showNotification('Error: ' + error.message);
+        showNotification('Error: ' + error.message, 'error');
     } finally {
         editBtn.disabled = false;
-        editBtn.textContent = 'Apply Edit';
+        editBtn.textContent = 'Edit Image';
     }
 }
 

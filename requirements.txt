@@ -5,11 +5,8 @@ requests==2.31.0
 python-dotenv==1.0.0
 gunicorn==21.2.0
 
-# Image Processing & Enhancement
-Pillow==10.1.0
-
 # Payment Processing
 stripe==7.8.0
 
+# Note: Pillow removed - image enhancement disabled to avoid Python 3.13 compatibility issues
 # Note: replicate and openai libraries removed - using REST APIs directly instead
-# This avoids compatibility issues with newer Python versions

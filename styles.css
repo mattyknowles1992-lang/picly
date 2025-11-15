@@ -466,7 +466,10 @@ body {
 }
 
 #negativePrompt {
-    min-height: 100px;
+    min-height: 150px;
+    padding: 1.25rem;
+    font-size: 1rem;
+    line-height: 1.6;
     resize: vertical;
 }
 
@@ -2349,7 +2352,7 @@ body {
     }
     
     #negativePrompt {
-        min-height: 80px;
+        min-height: 120px;
         font-size: 0.9rem;
     }
     

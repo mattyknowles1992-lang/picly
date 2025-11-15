@@ -86,9 +86,11 @@ TOKEN_COSTS = {
     'sdxl_refiner': 2,      # £0.016 (cost £0.0024, profit 567%)
     'dalle3_standard': 6,   # £0.048 (cost £0.032, profit 50%)
     'dalle3_hd': 12,        # £0.096 (cost £0.064, profit 50%)
-    'video_5s': 30,         # £0.24 (cost £0.20, profit 20%)
-    'video_8s': 50,         # £0.40 (cost £0.32, profit 25%)
-    'video_10s': 60,        # £0.48 (cost £0.40, profit 20%)
+    'video_cartoon_5s': 20, # £0.16 (cost £0.13, profit 23%) - 8-9/10 quality, ideal for cartoons
+    'video_cartoon_8s': 35, # £0.28 (cost £0.22, profit 27%) - 8-9/10 quality, ideal for cartoons
+    'video_premium_5s': 30, # £0.24 (cost £0.20, profit 20%) - 10/10 quality, photorealistic
+    'video_premium_8s': 50, # £0.40 (cost £0.32, profit 25%) - 10/10 quality, photorealistic
+    'video_premium_10s': 60,# £0.48 (cost £0.40, profit 20%) - 10/10 quality, photorealistic
 }
 
 # Credit Packages (token-based) - POUND STERLING
@@ -116,18 +118,20 @@ SUBSCRIPTION_PLANS = {
         'name': 'User',
         'images_free': 'unlimited',  # Flux/SDXL (£0 API cost)
         'tokens_monthly': 1050,  # £8.40 token value
-        'videos_monthly': 21,  # 21x 8s videos included (1050 tokens worth)
+        'videos_cartoon': 30,  # 30x 8s cartoon videos (8-9/10 quality) = 1050 tokens
+        'videos_premium': 21,  # OR 21x 8s premium videos (10/10 quality) = 1050 tokens
         'features': [
             'Unlimited Flux Schnell & SDXL images',
-            '1050 tokens/month OR 21 videos (8s)',
+            '1050 tokens/month',
+            '30 cartoon videos (8s, 8-9/10) OR 21 premium videos (8s, 10/10)',
             'Mix & match: videos, DALL-E, SDXL',
             'Commercial use license',
             'No watermark',
             'Priority queue',
             'HD downloads'
         ],
-        'recommended_use': '15 videos (8s) + 20 DALL-E HD + 50 SDXL',
-        'api_cost_estimate': 6.99,  # £6.99 (15 videos @ £0.32 + 20 DALL-E @ £0.064 + 50 SDXL @ £0.0024)
+        'recommended_use': '20 cartoon videos (8s) + 20 DALL-E HD + 50 SDXL',
+        'api_cost_estimate': 6.99,  # £6.99 (20 cartoon videos @ £0.22 + 20 DALL-E @ £0.064 + 50 SDXL @ £0.0024)
         'profit_margin': 0.30  # 30% exactly
     },
     'creator': {
@@ -136,10 +140,12 @@ SUBSCRIPTION_PLANS = {
         'name': 'Creator',
         'images_free': 'unlimited',  # Flux/SDXL
         'tokens_monthly': 1950,  # £15.60 token value
-        'videos_monthly': 39,  # 39x 8s videos included (1950 tokens worth)
+        'videos_cartoon': 55,  # 55x 8s cartoon videos (8-9/10 quality) = 1925 tokens
+        'videos_premium': 39,  # OR 39x 8s premium videos (10/10 quality) = 1950 tokens
         'features': [
             'Unlimited Flux Schnell & SDXL images',
-            '1950 tokens/month OR 39 videos (8s)',
+            '1950 tokens/month',
+            '55 cartoon videos (8s, 8-9/10) OR 39 premium videos (8s, 10/10)',
             'Mix & match: videos, DALL-E, SDXL',
             '15% discount on token purchases',
             'Commercial use license',
@@ -149,8 +155,8 @@ SUBSCRIPTION_PLANS = {
             'Custom watermark',
             'HD downloads'
         ],
-        'recommended_use': '30 videos (8s) + 30 DALL-E HD + 100 SDXL',
-        'api_cost_estimate': 12.59,  # £12.59 (30 videos @ £0.32 + 30 DALL-E @ £0.064 + 100 SDXL @ £0.0024)
+        'recommended_use': '40 cartoon videos (8s) + 30 DALL-E HD + 100 SDXL',
+        'api_cost_estimate': 12.59,  # £12.59 (40 cartoon videos @ £0.22 + 30 DALL-E @ £0.064 + 100 SDXL @ £0.0024)
         'profit_margin': 0.30  # 30% exactly
     },
     'pro': {
@@ -159,10 +165,12 @@ SUBSCRIPTION_PLANS = {
         'name': 'Pro',
         'images_free': 'unlimited',  # Flux/SDXL
         'tokens_monthly': 3500,  # £28.00 token value
-        'videos_monthly': 70,  # 70x 8s videos included (3500 tokens worth)
+        'videos_cartoon': 100, # 100x 8s cartoon videos (8-9/10 quality) = 3500 tokens
+        'videos_premium': 70,  # OR 70x 8s premium videos (10/10 quality) = 3500 tokens
         'features': [
             'Unlimited Flux Schnell & SDXL images',
-            '3500 tokens/month OR 70 videos (8s)',
+            '3500 tokens/month',
+            '100 cartoon videos (8s, 8-9/10) OR 70 premium videos (8s, 10/10)',
             'Mix & match: videos, DALL-E, SDXL',
             '20% discount on token purchases',
             'Priority generation queue (fastest)',
@@ -174,8 +182,8 @@ SUBSCRIPTION_PLANS = {
             'Dedicated support',
             'Early access to new features'
         ],
-        'recommended_use': '50 videos (8s) + 50 DALL-E HD + 200 SDXL',
-        'api_cost_estimate': 22.40,  # £22.40 (50 videos @ £0.32 + 50 DALL-E @ £0.064 + 200 SDXL @ £0.0024)
+        'recommended_use': '70 cartoon videos (8s) + 50 DALL-E HD + 200 SDXL',
+        'api_cost_estimate': 22.40,  # £22.40 (70 cartoon videos @ £0.22 + 50 DALL-E @ £0.064 + 200 SDXL @ £0.0024)
         'profit_margin': 0.30  # 30% exactly
     },
 }

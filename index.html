@@ -89,6 +89,10 @@
       gtag('js', new Date());
       gtag('config', 'G-XXXXXXXXXX');
     </script>
+    
+    <!-- Google AdSense (replace with your Publisher ID) -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-XXXXXXXXXX"
+     crossorigin="anonymous"></script>
 </head>
 <body>
     <!-- Animated Background -->
@@ -110,6 +114,22 @@
                 <a href="editor.html" class="nav-link">Editor Pro</a>
             </div>
             <div class="nav-actions" id="navActions" style="display: none;">
+                <!-- Credit Display (shown when logged in) -->
+                <div class="credit-display" id="creditDisplay" style="display: none;">
+                    <div class="credit-item">
+                        <span class="credit-icon">⚡</span>
+                        <span id="freeCredits">10</span> Free
+                    </div>
+                    <div class="credit-item premium">
+                        <span class="credit-icon">💎</span>
+                        <span id="premiumCredits">0</span> Premium
+                    </div>
+                    <div class="credit-item unlimited" id="unlimitedBadge" style="display: none;">
+                        <span class="credit-icon">♾️</span>
+                        Unlimited
+                    </div>
+                    <button class="buy-credits-btn" id="buyCreditsBtn">Buy Credits</button>
+                </div>
             </div>
             <div class="nav-user" id="navUser" style="display: none;">
             </div>
@@ -158,6 +178,91 @@
                 <button type="submit" class="auth-btn">Create Account</button>
                 <p class="auth-switch">Already have an account? <span id="showLogin">Sign in</span></p>
             </form>
+        </div>
+    </div>
+
+    <!-- Buy Credits Modal -->
+    <div id="buyCreditsModal" class="auth-modal">
+        <div class="auth-modal-content buy-credits-content">
+            <span class="auth-close">&times;</span>
+            <h2>💎 Get More Credits</h2>
+            <p class="modal-subtitle">Choose your plan and start creating unlimited masterpieces</p>
+            
+            <!-- Credit Packages -->
+            <div class="pricing-grid">
+                <!-- Starter Package -->
+                <div class="pricing-card">
+                    <h3>Starter</h3>
+                    <div class="price">$0.50</div>
+                    <div class="credits">10 Credits</div>
+                    <div class="per-image">$0.05 per image</div>
+                    <button class="buy-btn" data-package="starter">Buy Now</button>
+                </div>
+
+                <!-- Popular Package -->
+                <div class="pricing-card popular">
+                    <div class="popular-badge">POPULAR</div>
+                    <h3>Popular</h3>
+                    <div class="price">$2.50</div>
+                    <div class="credits">50 Credits</div>
+                    <div class="per-image">$0.05 per image</div>
+                    <button class="buy-btn" data-package="popular">Buy Now</button>
+                </div>
+
+                <!-- Pro Package -->
+                <div class="pricing-card">
+                    <h3>Pro</h3>
+                    <div class="price">$5.00</div>
+                    <div class="credits">100 Credits</div>
+                    <div class="per-image">$0.05 per image</div>
+                    <button class="buy-btn" data-package="pro">Buy Now</button>
+                </div>
+
+                <!-- Creator Package -->
+                <div class="pricing-card">
+                    <h3>Creator</h3>
+                    <div class="price">$25.00</div>
+                    <div class="credits">500 Credits</div>
+                    <div class="per-image">$0.05 per image</div>
+                    <button class="buy-btn" data-package="creator">Buy Now</button>
+                </div>
+            </div>
+
+            <!-- Unlimited Subscription -->
+            <div class="unlimited-section">
+                <div class="unlimited-card">
+                    <div class="unlimited-header">
+                        <h3>♾️ Unlimited Premium</h3>
+                        <div class="unlimited-badge">BEST VALUE</div>
+                    </div>
+                    <div class="unlimited-price">$29/month</div>
+                    <div class="unlimited-features">
+                        <div class="feature">✓ Unlimited DALL-E 3 HD generations</div>
+                        <div class="feature">✓ 9.5/10 quality score</div>
+                        <div class="feature">✓ No ads - premium experience</div>
+                        <div class="feature">✓ Priority generation queue</div>
+                        <div class="feature">✓ Cancel anytime</div>
+                    </div>
+                    <button class="buy-btn unlimited-btn" id="subscribeBtn">Subscribe Now</button>
+                </div>
+            </div>
+
+            <!-- Features Comparison -->
+            <div class="features-comparison">
+                <h4>What's Included?</h4>
+                <div class="comparison-row">
+                    <span>⚡ Free Tier: Flux Dev (9.0/10 quality)</span>
+                    <span>10 free daily</span>
+                </div>
+                <div class="comparison-row">
+                    <span>💎 Premium: DALL-E 3 HD (9.5/10 quality)</span>
+                    <span>Pay-per-use</span>
+                </div>
+                <div class="comparison-row">
+                    <span>♾️ Unlimited: DALL-E 3 HD</span>
+                    <span>No limits!</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -220,6 +325,12 @@
                     </div>
 
                     <div class="controls-grid">
+                        <!-- Quality Tier Selector -->
+                        <select id="qualityTier" class="quality-tier-select">
+                            <option value="free">⚡ Free Tier - Flux Dev (9.0/10)</option>
+                            <option value="premium">💎 Premium - DALL-E 3 HD (9.5/10)</option>
+                        </select>
+
                         <!-- Style Selector -->
                         <select id="styleSelect">
                             <option value="">Choose a style...</option>
@@ -303,6 +414,21 @@
                         <p>Your generated image will appear here</p>
                     </div>
                 </div>
+                
+                <!-- Ad Placement (Free Users Only) -->
+                <div id="adContainer" class="ad-container" style="display: none;">
+                    <!-- Google AdSense Banner Ad -->
+                    <ins class="adsbygoogle"
+                         style="display:block"
+                         data-ad-client="ca-pub-XXXXXXXXXX"
+                         data-ad-slot="YYYYYYYYYY"
+                         data-ad-format="auto"
+                         data-full-width-responsive="true"></ins>
+                    <script>
+                         (adsbygoogle = window.adsbygoogle || []).push({});
+                    </script>
+                </div>
+                
                 <div id="imageActions" class="image-actions" style="display: none;">
                     <button class="action-btn download-btn" onclick="downloadImage()">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

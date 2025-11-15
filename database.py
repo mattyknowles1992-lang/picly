@@ -32,6 +32,9 @@ class UserDatabase:
                 referral_code TEXT UNIQUE,
                 referred_by INTEGER,
                 total_generations INTEGER DEFAULT 0,
+                subscription_status TEXT DEFAULT 'none',
+                subscription_id TEXT,
+                subscription_expires_at TIMESTAMP,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 last_login TIMESTAMP,
                 FOREIGN KEY (referred_by) REFERENCES users (id)
@@ -281,7 +284,8 @@ class UserDatabase:
             # Check if daily free credits need reset
             cursor.execute('''
                 SELECT premium_credits, free_credits_today, last_free_reset,
-                       referral_code, total_generations
+                       referral_code, total_generations, subscription_status,
+                       subscription_expires_at
                 FROM users WHERE id = ?
             ''', (user_id,))
             
@@ -290,7 +294,18 @@ class UserDatabase:
                 conn.close()
                 return {'success': False, 'error': 'User not found'}
             
-            premium, free, last_reset, ref_code, total_gens = result
+            premium, free, last_reset, ref_code, total_gens, sub_status, sub_expires = result
+            
+            # Check if subscription expired
+            if sub_status == 'active':
+                from datetime import datetime
+                if sub_expires and datetime.fromisoformat(sub_expires) < datetime.now():
+                    cursor.execute('''
+                        UPDATE users SET subscription_status = 'expired'
+                        WHERE id = ?
+                    ''', (user_id,))
+                    sub_status = 'expired'
+                    conn.commit()
             
             # Reset daily free credits if new day
             from datetime import date
@@ -312,7 +327,10 @@ class UserDatabase:
                 'premium_credits': premium,
                 'free_credits': free,
                 'referral_code': ref_code,
-                'total_generations': total_gens
+                'total_generations': total_gens,
+                'subscription_status': sub_status,
+                'subscription_expires': sub_expires,
+                'has_unlimited': sub_status == 'active'
             }
             
         except Exception as e:
@@ -439,5 +457,70 @@ class UserDatabase:
             
         except sqlite3.IntegrityError:
             return {'success': False, 'error': 'Achievement already claimed'}
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
+    
+    def activate_subscription(self, user_id, subscription_id):
+        """Activate unlimited subscription for user"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            from datetime import datetime, timedelta
+            expires_at = datetime.now() + timedelta(days=30)
+            
+            cursor.execute('''
+                UPDATE users 
+                SET subscription_status = 'active',
+                    subscription_id = ?,
+                    subscription_expires_at = ?
+                WHERE id = ?
+            ''', (subscription_id, expires_at.isoformat(), user_id))
+            
+            conn.commit()
+            conn.close()
+            
+            return {'success': True, 'message': 'Unlimited subscription activated!'}
+            
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
+    
+    def deactivate_subscription(self, subscription_id):
+        """Deactivate subscription when cancelled"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                UPDATE users 
+                SET subscription_status = 'cancelled'
+                WHERE subscription_id = ?
+            ''', (subscription_id,))
+            
+            conn.commit()
+            conn.close()
+            
+            return {'success': True, 'message': 'Subscription cancelled'}
+            
+        except Exception as e:
+            return {'success': False, 'error': str(e)}
+    
+    def increment_generations(self, user_id):
+        """Increment generation count for unlimited users"""
+        try:
+            conn = sqlite3.connect(self.db_path)
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                UPDATE users 
+                SET total_generations = total_generations + 1
+                WHERE id = ?
+            ''', (user_id,))
+            
+            conn.commit()
+            conn.close()
+            
+            return {'success': True}
+            
         except Exception as e:
             return {'success': False, 'error': str(e)}

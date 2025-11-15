@@ -56,12 +56,17 @@ CONFIG = {
 if stripe and CONFIG['STRIPE_SECRET_KEY'] != 'your-stripe-secret-key-here':
     stripe.api_key = CONFIG['STRIPE_SECRET_KEY']
 
-# Credit Packages (50% profit margin)
+# Credit Packages (25% profit margin - competitive market pricing)
 CREDIT_PACKAGES = {
-    'starter': {'credits': 10, 'price': 0.80, 'name': 'Starter'},
-    'popular': {'credits': 50, 'price': 3.50, 'name': 'Popular', 'bonus': 0},
-    'pro': {'credits': 100, 'price': 6.00, 'name': 'Pro', 'bonus': 0},
+    'starter': {'credits': 10, 'price': 0.50, 'name': 'Starter'},
+    'popular': {'credits': 50, 'price': 2.50, 'name': 'Popular', 'bonus': 0},
+    'pro': {'credits': 100, 'price': 5.00, 'name': 'Pro', 'bonus': 0},
     'creator': {'credits': 500, 'price': 25.00, 'name': 'Creator', 'bonus': 0},
+}
+
+# Unlimited Subscription (45% profit margin - competitive with Midjourney)
+UNLIMITED_SUBSCRIPTION = {
+    'monthly': {'price': 29.00, 'name': 'Unlimited Premium', 'interval': 'month'},
 }
 
 # ⚠️ IMPORTANT: Replace the placeholder keys above with your actual API keys
@@ -229,8 +234,62 @@ def get_credit_packages():
     return jsonify({
         'success': True,
         'packages': CREDIT_PACKAGES,
+        'unlimited': UNLIMITED_SUBSCRIPTION,
         'stripe_publishable_key': CONFIG['STRIPE_PUBLISHABLE_KEY']
     })
+
+
+@app.route('/api/subscription/create', methods=['POST'])
+def create_subscription():
+    """Create unlimited subscription checkout"""
+    try:
+        if not stripe:
+            return jsonify({'success': False, 'error': 'Stripe not configured'}), 500
+        
+        session_token = request.cookies.get('session_token')
+        if not session_token:
+            return jsonify({'success': False, 'error': 'Must be logged in'}), 401
+        
+        validation = user_db.validate_session(session_token)
+        if not validation.get('valid'):
+            return jsonify({'success': False, 'error': 'Invalid session'}), 401
+        
+        user_id = validation['user_id']
+        
+        # Create Stripe checkout for subscription
+        checkout_session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[{
+                'price_data': {
+                    'currency': 'usd',
+                    'unit_amount': int(UNLIMITED_SUBSCRIPTION['monthly']['price'] * 100),
+                    'product_data': {
+                        'name': UNLIMITED_SUBSCRIPTION['monthly']['name'],
+                        'description': 'Unlimited DALL-E 3 HD generations - Premium quality',
+                    },
+                    'recurring': {
+                        'interval': 'month'
+                    }
+                },
+                'quantity': 1,
+            }],
+            mode='subscription',
+            success_url=request.host_url + 'subscription-success?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url=request.host_url + 'subscription-cancelled',
+            metadata={
+                'user_id': user_id,
+                'subscription_type': 'unlimited_monthly'
+            }
+        )
+        
+        return jsonify({
+            'success': True,
+            'checkout_url': checkout_session.url,
+            'session_id': checkout_session.id
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 
 @app.route('/api/credits/purchase', methods=['POST'])
@@ -314,20 +373,32 @@ def stripe_webhook():
         # Handle successful payment
         if event['type'] == 'checkout.session.completed':
             session = event['data']['object']
-            
             user_id = int(session['metadata']['user_id'])
-            credits = int(session['metadata']['credits'])
-            package_id = session['metadata']['package_id']
             
-            # Add credits to user account
-            result = user_db.add_credits(
-                user_id=user_id,
-                credits=credits,
-                transaction_id=session['payment_intent'],
-                amount=session['amount_total'] / 100  # Convert from cents
-            )
-            
-            print(f"Credits added: {result}")
+            # Check if it's a subscription or one-time payment
+            if session['mode'] == 'subscription':
+                # Activate unlimited subscription
+                subscription_id = session['subscription']
+                user_db.activate_subscription(user_id, subscription_id)
+                print(f"Subscription activated for user {user_id}")
+            else:
+                # Add credits for one-time purchase
+                credits = int(session['metadata']['credits'])
+                package_id = session['metadata']['package_id']
+                
+                result = user_db.add_credits(
+                    user_id=user_id,
+                    credits=credits,
+                    transaction_id=session['payment_intent'],
+                    amount=session['amount_total'] / 100
+                )
+                print(f"Credits added: {result}")
+        
+        # Handle subscription cancellation
+        elif event['type'] == 'customer.subscription.deleted':
+            subscription = event['data']['object']
+            user_db.deactivate_subscription(subscription['id'])
+            print(f"Subscription cancelled: {subscription['id']}")
         
         return jsonify({'success': True})
         

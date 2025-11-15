@@ -1341,5 +1341,159 @@ window.addEventListener('load', () => {
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', init);
 
+// ============================================
+// CREDIT SYSTEM & MONETIZATION
+// ============================================
+
+// Check and display user credits
+async function checkCredits() {
+    try {
+        const response = await fetch('/api/credits/balance');
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update credit display
+            document.getElementById('freeCredits').textContent = data.free_credits || 0;
+            document.getElementById('premiumCredits').textContent = data.premium_credits || 0;
+            
+            // Show unlimited badge if user has subscription
+            const unlimitedBadge = document.getElementById('unlimitedBadge');
+            if (data.has_unlimited) {
+                unlimitedBadge.style.display = 'flex';
+                hideAds(); // Hide ads for unlimited users
+            } else {
+                unlimitedBadge.style.display = 'none';
+            }
+            
+            // Show credit display
+            document.getElementById('creditDisplay').style.display = 'flex';
+            
+            // Control ad visibility based on user status
+            updateAdVisibility(data);
+            
+            return data;
+        }
+    } catch (error) {
+        console.error('Error checking credits:', error);
+    }
+    return null;
+}
+
+// Update ad visibility based on user status
+function updateAdVisibility(creditData) {
+    const adContainer = document.getElementById('adContainer');
+    
+    if (!adContainer) return;
+    
+    // Hide ads for premium/unlimited users
+    if (creditData.has_unlimited || creditData.premium_credits > 0) {
+        hideAds();
+    } else {
+        showAds();
+    }
+}
+
+// Show ads for free users
+function showAds() {
+    const adContainer = document.getElementById('adContainer');
+    if (adContainer) {
+        adContainer.style.display = 'block';
+    }
+    document.body.classList.remove('premium-user');
+}
+
+// Hide ads for premium users
+function hideAds() {
+    const adContainer = document.getElementById('adContainer');
+    if (adContainer) {
+        adContainer.style.display = 'none';
+    }
+    document.body.classList.add('premium-user');
+}
+
+// Buy Credits Modal
+const buyCreditsModal = document.getElementById('buyCreditsModal');
+const buyCreditsBtn = document.getElementById('buyCreditsBtn');
+
+if (buyCreditsBtn) {
+    buyCreditsBtn.addEventListener('click', () => {
+        buyCreditsModal.classList.add('show');
+    });
+}
+
+// Handle credit package purchase
+document.querySelectorAll('.buy-btn[data-package]').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+        const packageId = e.target.dataset.package;
+        await purchaseCredits(packageId);
+    });
+});
+
+// Handle unlimited subscription
+document.getElementById('subscribeBtn')?.addEventListener('click', async () => {
+    await subscribeUnlimited();
+});
+
+// Purchase credits
+async function purchaseCredits(packageId) {
+    try {
+        const response = await fetch('/api/credits/purchase', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ package: packageId })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Redirect to Stripe checkout
+            window.location.href = data.checkout_url;
+        } else {
+            showNotification(data.error || 'Please log in to purchase credits', 'error');
+        }
+    } catch (error) {
+        console.error('Error purchasing credits:', error);
+        showNotification('Error processing purchase', 'error');
+    }
+}
+
+// Subscribe to unlimited plan
+async function subscribeUnlimited() {
+    try {
+        const response = await fetch('/api/subscription/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Redirect to Stripe checkout
+            window.location.href = data.checkout_url;
+        } else {
+            showNotification(data.error || 'Please log in to subscribe', 'error');
+        }
+    } catch (error) {
+        console.error('Error creating subscription:', error);
+        showNotification('Error processing subscription', 'error');
+    }
+}
+
+// Close modals
+document.querySelectorAll('.auth-close').forEach(closeBtn => {
+    closeBtn.addEventListener('click', (e) => {
+        e.target.closest('.auth-modal').classList.remove('show');
+    });
+});
+
+// Check credits when user logs in
+window.addEventListener('load', () => {
+    checkCredits();
+});
+
+// Show ads to anonymous users by default
+showAds();
+
+
 
 

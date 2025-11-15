@@ -2,9 +2,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0f172a">
     <title>FAQ - Frequently Asked Questions | Picly</title>
     <meta name="description" content="Common questions about Picly's AI image and video generation platform. Learn how tokens work, quality levels, unlimited features, and more.">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
         * {
             margin: 0;
@@ -13,116 +22,187 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #333;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+            color: #e2e8f0;
             line-height: 1.6;
             min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .gradient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .orb-1 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, #6366f1, transparent);
+            top: -250px;
+            left: -250px;
+        }
+
+        .orb-2 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, #8b5cf6, transparent);
+            bottom: -200px;
+            right: -200px;
+            animation-delay: 7s;
+        }
+
+        .orb-3 {
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, #ec4899, transparent);
+            top: 50%;
+            left: 50%;
+            animation-delay: 14s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(100px, -100px) scale(1.1); }
+            50% { transform: translate(-50px, 100px) scale(0.9); }
+            75% { transform: translate(-100px, -50px) scale(1.05); }
         }
 
         .header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 20px 0;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+            padding: 1rem 0;
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
         .header-content {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 0 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         .logo {
-            font-size: 28px;
+            font-size: 1.75rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #6366f1, #ec4899);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            text-decoration: none;
+            cursor: pointer;
         }
 
         .btn-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
             color: white;
-            padding: 10px 25px;
-            border-radius: 25px;
+            padding: 0.625rem 1.5rem;
+            border-radius: 0.5rem;
             text-decoration: none;
             font-weight: 600;
-            transition: transform 0.3s;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
         }
 
         .btn-header:hover {
             transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
         }
 
         .container {
             max-width: 900px;
             margin: 0 auto;
             padding: 60px 20px;
+            position: relative;
+            z-index: 1;
         }
 
         .page-title {
             text-align: center;
-            color: white;
-            font-size: 48px;
+            color: #f1f5f9;
+            font-size: 3rem;
             font-weight: 800;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 20px rgba(99, 102, 241, 0.3);
         }
 
         .page-subtitle {
             text-align: center;
-            color: white;
-            font-size: 20px;
-            margin-bottom: 60px;
+            color: #cbd5e1;
+            font-size: 1.25rem;
+            margin-bottom: 3rem;
             opacity: 0.95;
         }
 
         .faq-search {
-            background: white;
-            border-radius: 50px;
-            padding: 15px 30px;
-            margin-bottom: 40px;
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 0.75rem;
+            padding: 1rem 1.5rem;
+            margin-bottom: 2.5rem;
             display: flex;
             align-items: center;
-            gap: 15px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            gap: 1rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
         }
 
         .faq-search input {
             flex: 1;
             border: none;
             outline: none;
-            font-size: 16px;
-            padding: 5px;
+            font-size: 1rem;
+            padding: 0.5rem;
+            background: transparent;
+            color: #e2e8f0;
+        }
+
+        .faq-search input::placeholder {
+            color: #94a3b8;
         }
 
         .faq-search-icon {
-            font-size: 20px;
-            color: #667eea;
+            font-size: 1.25rem;
+            color: #6366f1;
         }
 
         .faq-categories {
             display: flex;
-            gap: 15px;
+            gap: 1rem;
             flex-wrap: wrap;
-            margin-bottom: 40px;
+            margin-bottom: 2.5rem;
             justify-content: center;
         }
 
         .category-btn {
-            padding: 10px 25px;
-            border-radius: 25px;
-            border: 2px solid white;
-            background: transparent;
-            color: white;
+            padding: 0.625rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+            color: #cbd5e1;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
@@ -130,57 +210,64 @@
 
         .category-btn:hover,
         .category-btn.active {
-            background: white;
-            color: #667eea;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 5px 20px rgba(99, 102, 241, 0.3);
         }
 
         .faq-section {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+            border-radius: 1rem;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
         }
 
         .faq-section h2 {
-            font-size: 28px;
-            margin-bottom: 30px;
-            color: #333;
-            padding-bottom: 15px;
-            border-bottom: 3px solid #667eea;
+            font-size: 1.75rem;
+            margin-bottom: 2rem;
+            color: #f1f5f9;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid rgba(99, 102, 241, 0.5);
         }
 
         .faq-item {
-            margin-bottom: 20px;
-            border: 1px solid #e0e0e0;
-            border-radius: 12px;
+            margin-bottom: 1.25rem;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 0.75rem;
             overflow: hidden;
             transition: all 0.3s;
+            background: rgba(15, 23, 42, 0.3);
         }
 
         .faq-item:hover {
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.2);
+            border-color: rgba(99, 102, 241, 0.4);
         }
 
         .faq-question {
-            background: #f8f9fa;
-            padding: 20px;
+            background: rgba(30, 41, 59, 0.4);
+            padding: 1.25rem;
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-weight: 600;
-            font-size: 18px;
+            font-size: 1.125rem;
             transition: background 0.3s;
+            color: #f1f5f9;
         }
 
         .faq-question:hover {
-            background: #e9ecef;
+            background: rgba(99, 102, 241, 0.2);
         }
 
         .faq-toggle {
-            font-size: 24px;
-            color: #667eea;
+            font-size: 1.5rem;
+            color: #6366f1;
             transition: transform 0.3s;
         }
 
@@ -189,128 +276,142 @@
         }
 
         .faq-answer {
-            padding: 0 20px;
+            padding: 0 1.25rem;
             max-height: 0;
             overflow: hidden;
             transition: all 0.3s ease;
-            color: #666;
+            color: #cbd5e1;
             line-height: 1.8;
         }
 
         .faq-item.active .faq-answer {
-            padding: 20px;
+            padding: 1.25rem;
             max-height: 1000px;
         }
 
         .faq-answer ul {
-            margin: 15px 0 15px 25px;
+            margin: 1rem 0 1rem 1.5rem;
         }
 
         .faq-answer li {
-            margin: 8px 0;
+            margin: 0.5rem 0;
         }
 
         .faq-answer strong {
-            color: #333;
+            color: #f1f5f9;
         }
 
         .highlight-box {
-            background: #f0f4ff;
-            border-left: 4px solid #667eea;
-            padding: 15px;
-            margin: 15px 0;
-            border-radius: 8px;
+            background: rgba(99, 102, 241, 0.1);
+            border-left: 4px solid #6366f1;
+            padding: 1rem;
+            margin: 1rem 0;
+            border-radius: 0.5rem;
         }
 
         .quality-comparison {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
+            gap: 1rem;
+            margin: 1.25rem 0;
         }
 
         .quality-card {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 10px;
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            padding: 1rem;
+            border-radius: 0.75rem;
             text-align: center;
         }
 
         .quality-score {
-            font-size: 32px;
+            font-size: 2rem;
             font-weight: 800;
-            color: #667eea;
-            margin-bottom: 5px;
+            color: #6366f1;
+            margin-bottom: 0.5rem;
         }
 
         .quality-name {
             font-weight: 600;
-            margin-bottom: 5px;
+            margin-bottom: 0.5rem;
+            color: #f1f5f9;
         }
 
         .quality-use {
-            font-size: 14px;
-            color: #666;
+            font-size: 0.875rem;
+            color: #94a3b8;
         }
 
         .cta-box {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
             color: white;
-            padding: 40px;
-            border-radius: 20px;
+            padding: 2.5rem;
+            border-radius: 1rem;
             text-align: center;
-            margin-top: 60px;
+            margin-top: 3rem;
+            box-shadow: 0 10px 40px rgba(99, 102, 241, 0.3);
         }
 
         .cta-box h2 {
-            font-size: 32px;
-            margin-bottom: 15px;
+            font-size: 2rem;
+            margin-bottom: 1rem;
         }
 
         .cta-box p {
-            font-size: 18px;
-            margin-bottom: 30px;
+            font-size: 1.125rem;
+            margin-bottom: 2rem;
             opacity: 0.95;
         }
 
         .cta-btn {
             background: white;
-            color: #667eea;
-            padding: 15px 40px;
-            border-radius: 30px;
+            color: #6366f1;
+            padding: 1rem 2.5rem;
+            border-radius: 0.5rem;
             text-decoration: none;
             font-weight: 700;
-            font-size: 18px;
+            font-size: 1.125rem;
             display: inline-block;
-            transition: transform 0.3s;
+            transition: all 0.3s;
         }
 
         .cta-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
         }
 
         @media (max-width: 768px) {
             .page-title {
-                font-size: 32px;
+                font-size: 2rem;
             }
 
             .faq-section {
-                padding: 20px;
+                padding: 1.5rem;
             }
 
             .faq-question {
-                font-size: 16px;
-                padding: 15px;
+                font-size: 1rem;
+                padding: 1rem;
             }
 
             .quality-comparison {
                 grid-template-columns: 1fr;
             }
+
+            .container {
+                padding: 2rem 1rem;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Animated Background -->
+    <div class="animated-bg">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
     <!-- Header -->
     <div class="header">
         <div class="header-content">

@@ -2,9 +2,18 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0f172a">
     <title>Pricing - Picly | AI Images & Videos from £9.99</title>
     <meta name="description" content="Professional AI image and video generation starting at £9.99/month. Unlimited images + up to 100 videos per month. All-in-one platform.">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
         * {
             margin: 0;
@@ -13,150 +22,218 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #333;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+            color: #e2e8f0;
             line-height: 1.6;
+            position: relative;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Animated Background */
+        .animated-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .gradient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .orb-1 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, #6366f1, transparent);
+            top: -250px;
+            left: -250px;
+        }
+
+        .orb-2 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, #8b5cf6, transparent);
+            bottom: -200px;
+            right: -200px;
+            animation-delay: 7s;
+        }
+
+        .orb-3 {
+            width: 350px;
+            height: 350px;
+            background: radial-gradient(circle, #ec4899, transparent);
+            top: 50%;
+            left: 50%;
+            animation-delay: 14s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(100px, -100px) scale(1.1); }
+            50% { transform: translate(-50px, 100px) scale(0.9); }
+            75% { transform: translate(-100px, -50px) scale(1.05); }
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 1.25rem;
+            position: relative;
+            z-index: 1;
         }
 
         /* Header */
         .header {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 20px 0;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+            padding: 1rem 0;
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
 
         .header-content {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 0 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
 
         .logo {
-            font-size: 28px;
+            font-size: 1.75rem;
             font-weight: 800;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #6366f1, #ec4899);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            text-decoration: none;
+            cursor: pointer;
         }
 
         .nav-links {
             display: flex;
-            gap: 30px;
+            gap: 2rem;
         }
 
         .nav-links a {
-            color: #333;
+            color: #cbd5e1;
             text-decoration: none;
             font-weight: 500;
             transition: color 0.3s;
         }
 
         .nav-links a:hover {
-            color: #667eea;
+            color: #6366f1;
         }
 
         .btn-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
             color: white;
-            padding: 10px 25px;
-            border-radius: 25px;
+            padding: 0.625rem 1.5rem;
+            border-radius: 0.5rem;
             text-decoration: none;
             font-weight: 600;
-            transition: transform 0.3s;
+            transition: all 0.3s;
         }
 
         .btn-header:hover {
             transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
         }
 
         /* Hero Section */
         .pricing-hero {
             text-align: center;
-            padding: 80px 20px 60px;
+            padding: 5rem 1.25rem 4rem;
             color: white;
         }
 
         .pricing-hero h1 {
-            font-size: 48px;
+            font-size: 3rem;
             font-weight: 800;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+            margin-bottom: 1.25rem;
+            text-shadow: 0 2px 20px rgba(99, 102, 241, 0.3);
+            color: #f1f5f9;
         }
 
         .pricing-hero p {
-            font-size: 20px;
+            font-size: 1.25rem;
             opacity: 0.95;
             max-width: 600px;
-            margin: 0 auto 30px;
+            margin: 0 auto 2rem;
+            color: #cbd5e1;
         }
 
         .pricing-toggle {
-            background: rgba(255,255,255,0.2);
+            background: rgba(30, 41, 59, 0.5);
             backdrop-filter: blur(10px);
-            border-radius: 50px;
-            padding: 8px;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 0.75rem;
+            padding: 0.5rem;
             display: inline-flex;
-            gap: 8px;
-            margin-top: 20px;
+            gap: 0.5rem;
+            margin-top: 1.25rem;
         }
 
         .toggle-btn {
-            padding: 12px 30px;
-            border-radius: 40px;
+            padding: 0.75rem 2rem;
+            border-radius: 0.5rem;
             border: none;
             background: transparent;
-            color: white;
+            color: #cbd5e1;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
         }
 
         .toggle-btn.active {
-            background: white;
-            color: #667eea;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
         }
 
         /* Pricing Cards */
         .pricing-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-            margin: 40px 0;
+            gap: 2rem;
+            margin: 2.5rem 0;
         }
 
         .pricing-card {
-            background: white;
-            border-radius: 20px;
-            padding: 40px 30px;
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 1rem;
+            padding: 2.5rem 2rem;
             position: relative;
-            transition: transform 0.3s, box-shadow 0.3s;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
         }
 
         .pricing-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            box-shadow: 0 20px 60px rgba(99, 102, 241, 0.3);
+            border-color: rgba(99, 102, 241, 0.5);
         }
 
         .pricing-card.featured {
-            border: 3px solid #667eea;
+            border: 2px solid #6366f1;
             transform: scale(1.05);
+            background: rgba(30, 41, 59, 0.7);
         }
 
         .pricing-card.featured::before {
@@ -165,69 +242,70 @@
             top: -15px;
             left: 50%;
             transform: translateX(-50%);
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
             color: white;
-            padding: 8px 25px;
-            border-radius: 20px;
-            font-size: 12px;
+            padding: 0.5rem 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
             font-weight: 700;
             letter-spacing: 1px;
         }
 
         .plan-name {
-            font-size: 14px;
+            font-size: 0.875rem;
             font-weight: 600;
-            color: #667eea;
+            color: #6366f1;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 10px;
+            margin-bottom: 0.75rem;
         }
 
         .plan-price {
-            font-size: 48px;
+            font-size: 3rem;
             font-weight: 800;
-            color: #333;
-            margin-bottom: 5px;
+            color: #f1f5f9;
+            margin-bottom: 0.5rem;
         }
 
         .plan-price span {
-            font-size: 20px;
-            color: #666;
+            font-size: 1.25rem;
+            color: #94a3b8;
             font-weight: 400;
         }
 
         .plan-description {
-            color: #666;
-            margin-bottom: 30px;
+            color: #cbd5e1;
+            margin-bottom: 2rem;
             min-height: 40px;
         }
 
         .plan-features {
             list-style: none;
-            margin-bottom: 30px;
+            margin-bottom: 2rem;
         }
 
         .plan-features li {
-            padding: 12px 0;
-            border-bottom: 1px solid #f0f0f0;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 0.75rem;
+            color: #cbd5e1;
         }
 
         .plan-features li::before {
             content: "✓";
-            color: #4CAF50;
+            color: #10b981;
             font-weight: bold;
-            font-size: 18px;
+            font-size: 1.125rem;
         }
 
         .plan-cta {
             width: 100%;
-            padding: 15px;
-            border-radius: 12px;
+            padding: 1rem;
+            border-radius: 0.75rem;
             border: none;
-            font-size: 16px;
+            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
@@ -237,39 +315,42 @@
         }
 
         .plan-cta.primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
             color: white;
         }
 
         .plan-cta.primary:hover {
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.4);
             transform: translateY(-2px);
         }
 
         .plan-cta.secondary {
-            background: #f8f9fa;
-            color: #667eea;
-            border: 2px solid #667eea;
+            background: rgba(30, 41, 59, 0.5);
+            color: #6366f1;
+            border: 2px solid #6366f1;
         }
 
         .plan-cta.secondary:hover {
-            background: #667eea;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
             color: white;
+            border-color: transparent;
         }
 
         /* Comparison Table */
         .comparison-section {
-            background: white;
-            border-radius: 20px;
-            padding: 60px 40px;
-            margin: 60px 0;
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 1rem;
+            padding: 3.75rem 2.5rem;
+            margin: 3.75rem 0;
         }
 
         .comparison-section h2 {
             text-align: center;
-            font-size: 36px;
-            margin-bottom: 40px;
-            color: #333;
+            font-size: 2.25rem;
+            margin-bottom: 2.5rem;
+            color: #f1f5f9;
         }
 
         .comparison-table {
@@ -280,84 +361,96 @@
         }
 
         .comparison-table thead tr {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
             color: white;
         }
 
         .comparison-table th,
         .comparison-table td {
-            padding: 20px;
+            padding: 1.25rem;
             text-align: center;
-            border: 1px solid #e0e0e0;
+            border: 1px solid rgba(148, 163, 184, 0.2);
         }
 
         .comparison-table th {
             font-weight: 700;
-            font-size: 18px;
+            font-size: 1.125rem;
+        }
+
+        .comparison-table tbody tr {
+            background: rgba(15, 23, 42, 0.3);
         }
 
         .comparison-table tbody tr:hover {
-            background: #f8f9fa;
+            background: rgba(99, 102, 241, 0.1);
         }
 
         .comparison-table .feature-name {
             text-align: left;
             font-weight: 600;
-            color: #333;
+            color: #f1f5f9;
+        }
+
+        .comparison-table td {
+            color: #cbd5e1;
         }
 
         .check-mark {
-            color: #4CAF50;
-            font-size: 24px;
+            color: #10b981;
+            font-size: 1.5rem;
             font-weight: bold;
         }
 
         .cross-mark {
-            color: #f44336;
-            font-size: 24px;
+            color: #ef4444;
+            font-size: 1.5rem;
         }
 
         /* FAQ Section */
         .faq-section {
-            background: white;
-            border-radius: 20px;
-            padding: 60px 40px;
-            margin: 60px 0;
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 1rem;
+            padding: 3.75rem 2.5rem;
+            margin: 3.75rem 0;
         }
 
         .faq-section h2 {
             text-align: center;
-            font-size: 36px;
-            margin-bottom: 40px;
-            color: #333;
+            font-size: 2.25rem;
+            margin-bottom: 2.5rem;
+            color: #f1f5f9;
         }
 
         .faq-item {
-            margin-bottom: 20px;
-            border: 1px solid #e0e0e0;
-            border-radius: 12px;
+            margin-bottom: 1.25rem;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            border-radius: 0.75rem;
             overflow: hidden;
+            background: rgba(15, 23, 42, 0.3);
         }
 
         .faq-question {
-            background: #f8f9fa;
-            padding: 20px;
+            background: rgba(30, 41, 59, 0.4);
+            padding: 1.25rem;
             cursor: pointer;
             font-weight: 600;
             display: flex;
             justify-content: space-between;
             align-items: center;
             transition: background 0.3s;
+            color: #f1f5f9;
         }
 
         .faq-question:hover {
-            background: #e9ecef;
+            background: rgba(99, 102, 241, 0.2);
         }
 
         .faq-answer {
-            padding: 20px;
+            padding: 1.25rem;
             display: none;
-            color: #666;
+            color: #cbd5e1;
             line-height: 1.8;
         }
 
@@ -368,38 +461,39 @@
         /* Trust Section */
         .trust-section {
             text-align: center;
-            padding: 60px 20px;
+            padding: 3.75rem 1.25rem;
             color: white;
         }
 
         .trust-badges {
             display: flex;
             justify-content: center;
-            gap: 40px;
+            gap: 2.5rem;
             flex-wrap: wrap;
-            margin-top: 30px;
+            margin-top: 2rem;
         }
 
         .trust-badge {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 10px;
+            gap: 0.75rem;
         }
 
         .trust-badge-icon {
-            font-size: 40px;
+            font-size: 2.5rem;
         }
 
         .trust-badge-text {
-            font-size: 14px;
+            font-size: 0.875rem;
             opacity: 0.9;
+            color: #cbd5e1;
         }
 
         /* Mobile Responsive */
         @media (max-width: 768px) {
             .pricing-hero h1 {
-                font-size: 32px;
+                font-size: 2rem;
             }
 
             .pricing-grid {
@@ -411,31 +505,47 @@
             }
 
             .comparison-table {
-                font-size: 14px;
+                font-size: 0.875rem;
             }
 
             .comparison-table th,
             .comparison-table td {
-                padding: 10px;
+                padding: 0.75rem;
             }
 
             .nav-links {
                 display: none;
             }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .comparison-section,
+            .faq-section {
+                padding: 2rem 1.5rem;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- Animated Background -->
+    <div class="animated-bg">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
     <!-- Header -->
     <div class="header">
         <div class="header-content">
-            <div class="logo">Picly</div>
+            <a href="/" class="logo">Picly</a>
             <div class="nav-links">
                 <a href="/">Home</a>
                 <a href="/pricing">Pricing</a>
-                <a href="#faq">FAQ</a>
+                <a href="/faq">FAQ</a>
             </div>
-            <a href="/signup" class="btn-header">Start Free</a>
+            <a href="/" class="btn-header">Start Free</a>
         </div>
     </div>
 
@@ -445,7 +555,7 @@
         <p>Professional AI images and videos from £9.99/month. No hidden fees. Cancel anytime.</p>
         <div class="pricing-toggle">
             <button class="toggle-btn active">Monthly</button>
-            <button class="toggle-btn">Annual <span style="font-size: 12px;">(Save 20%)</span></button>
+            <button class="toggle-btn">Annual <span style="font-size: 0.75rem;">(Save 20%)</span></button>
         </div>
     </div>
 

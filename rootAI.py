@@ -2907,3 +2907,248 @@ def get_rating_analytics():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+# ============ SOCIAL MEDIA CONTENT CREATOR ROUTES ============
+
+from social_content_creator import SocialContentCreator, estimate_monthly_costs
+
+social_creator = SocialContentCreator()
+
+@app.route('/social-content')
+def social_content_dashboard():
+    """Serve the social content creator dashboard"""
+    return render_template('social_content_dashboard.html')
+
+
+@app.route('/api/social-content/generate', methods=['POST'])
+def generate_social_content():
+    """Generate AI-optimized content for social media platforms"""
+    try:
+        # Check authentication
+        auth_header = request.headers.get('Authorization', '')
+        if not auth_header.startswith('Bearer '):
+            return jsonify({'success': False, 'error': 'Must be logged in'}), 401
+        
+        token = auth_header.replace('Bearer ', '')
+        validation = user_db.validate_session(token)
+        
+        if not validation.get('valid'):
+            return jsonify({'success': False, 'error': 'Invalid session'}), 401
+        
+        user_id = validation['user_id']
+        
+        # Get request data
+        data = request.get_json()
+        topic = data.get('topic', '')
+        content_type = data.get('content_type', 'image_post')
+        language = data.get('language', 'en')
+        quality = data.get('quality', 'free')
+        platforms = data.get('platforms', ['instagram', 'facebook'])
+        schedule_time_str = data.get('schedule_time')
+        
+        if not topic:
+            return jsonify({'success': False, 'error': 'Topic required'}), 400
+        
+        # Generate content
+        content = social_creator.generate_content(
+            topic=topic,
+            content_type=content_type,
+            platforms=platforms,
+            language=language,
+            quality=quality
+        )
+        
+        # Schedule content if time provided
+        if schedule_time_str:
+            from datetime import datetime
+            schedule_time = datetime.fromisoformat(schedule_time_str)
+            queue_id = social_creator.schedule_content(content, schedule_time, platforms)
+            content['queue_id'] = queue_id
+            content['scheduled_time'] = schedule_time_str
+        
+        # Log cost
+        if quality == 'premium':
+            # Estimate cost based on content type
+            if content_type in ['image_post', 'carousel', 'story']:
+                cost = 0.04  # DALL-E 3 image cost
+            else:  # video
+                cost = 0.50  # RunwayML video cost
+            
+            cost_monitor.log_api_cost(
+                user_id=user_id,
+                api_service='social_content_premium',
+                operation=content_type,
+                cost=cost,
+                success=True
+            )
+        
+        return jsonify({
+            'success': True,
+            'content': content,
+            'message': 'Content generated successfully'
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/social-content/scheduled', methods=['GET'])
+def get_scheduled_content():
+    """Get all scheduled content for user"""
+    try:
+        auth_header = request.headers.get('Authorization', '')
+        if not auth_header.startswith('Bearer '):
+            return jsonify({'success': False, 'error': 'Must be logged in'}), 401
+        
+        token = auth_header.replace('Bearer ', '')
+        validation = user_db.validate_session(token)
+        
+        if not validation.get('valid'):
+            return jsonify({'success': False, 'error': 'Invalid session'}), 401
+        
+        # Get scheduled content from database
+        import sqlite3
+        conn = sqlite3.connect(social_creator.db_path)
+        c = conn.cursor()
+        
+        c.execute('''SELECT * FROM content_queue 
+                    WHERE status = 'pending' 
+                    ORDER BY scheduled_time ASC 
+                    LIMIT 50''')
+        
+        columns = [description[0] for description in c.description]
+        scheduled = []
+        
+        for row in c.fetchall():
+            scheduled.append(dict(zip(columns, row)))
+        
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'content': scheduled
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/social-content/stats', methods=['GET'])
+def get_social_stats():
+    """Get social media content statistics"""
+    try:
+        auth_header = request.headers.get('Authorization', '')
+        if not auth_header.startswith('Bearer '):
+            return jsonify({'success': False, 'error': 'Must be logged in'}), 401
+        
+        token = auth_header.replace('Bearer ', '')
+        validation = user_db.validate_session(token)
+        
+        if not validation.get('valid'):
+            return jsonify({'success': False, 'error': 'Invalid session'}), 401
+        
+        # Get stats from database
+        import sqlite3
+        conn = sqlite3.connect(social_creator.db_path)
+        c = conn.cursor()
+        
+        # Total posts
+        c.execute('SELECT COUNT(*) FROM posted_content')
+        total_posts = c.fetchone()[0]
+        
+        # Scheduled posts
+        c.execute('SELECT COUNT(*) FROM content_queue WHERE status = "pending"')
+        scheduled = c.fetchone()[0]
+        
+        # Average engagement
+        c.execute('SELECT AVG(engagement_rate) FROM content_analytics')
+        avg_engagement = c.fetchone()[0] or 0
+        
+        # Total reach (sum of views)
+        c.execute('SELECT SUM(views) FROM content_analytics')
+        total_reach = c.fetchone()[0] or 0
+        
+        conn.close()
+        
+        return jsonify({
+            'success': True,
+            'stats': {
+                'total_posts': total_posts,
+                'scheduled': scheduled,
+                'avg_engagement': round(avg_engagement, 2),
+                'total_reach': total_reach
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/social-content/analytics', methods=['GET'])
+def get_social_analytics():
+    """Get comprehensive analytics report"""
+    try:
+        auth_header = request.headers.get('Authorization', '')
+        if not auth_header.startswith('Bearer '):
+            return jsonify({'success': False, 'error': 'Must be logged in'}), 401
+        
+        token = auth_header.replace('Bearer ', '')
+        validation = user_db.validate_session(token)
+        
+        if not validation.get('valid'):
+            return jsonify({'success': False, 'error': 'Invalid session'}), 401
+        
+        days = int(request.args.get('days', 30))
+        report = social_creator.get_analytics_report(days)
+        
+        return jsonify({
+            'success': True,
+            'analytics': report
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/social-content/cost-estimate', methods=['GET'])
+def get_cost_estimate():
+    """Get cost estimation for social content creation"""
+    try:
+        costs = estimate_monthly_costs()
+        return jsonify({
+            'success': True,
+            'costs': costs
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/social-content/post-now', methods=['POST'])
+def post_content_now():
+    """Post content immediately to platform"""
+    try:
+        auth_header = request.headers.get('Authorization', '')
+        if not auth_header.startswith('Bearer '):
+            return jsonify({'success': False, 'error': 'Must be logged in'}), 401
+        
+        token = auth_header.replace('Bearer ', '')
+        validation = user_db.validate_session(token)
+        
+        if not validation.get('valid'):
+            return jsonify({'success': False, 'error': 'Invalid session'}), 401
+        
+        data = request.get_json()
+        content_id = data.get('content_id')
+        platform = data.get('platform')
+        
+        if not content_id or not platform:
+            return jsonify({'success': False, 'error': 'content_id and platform required'}), 400
+        
+        # Post content
+        result = social_creator.auto_post_content(content_id, platform)
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+

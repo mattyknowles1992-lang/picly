@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autonomous Social Media Content Creator | Picly AI</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <style>
+        .social-dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 3rem;
+            color: white;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .dashboard-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .dashboard-header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-card h3 {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-card .change {
+            font-size: 0.9rem;
+            color: #10b981;
+        }
+
+        .stat-card .change.negative {
+            color: #ef4444;
+        }
+
+        .content-generator {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .form-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-section label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #1e293b;
+        }
+
+        .form-section input,
+        .form-section select,
+        .form-section textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-section input:focus,
+        .form-section select:focus,
+        .form-section textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .platform-selector {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .platform-option {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .platform-option:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+
+        .platform-option input[type="checkbox"] {
+            width: auto;
+            margin-right: 0.5rem;
+        }
+
+        .platform-option.selected {
+            border-color: #667eea;
+            background: linear-gradient(135deg, #667eea22, #764ba222);
+        }
+
+        .generate-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 1.25rem 3rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+            margin-top: 1rem;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .schedule-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-top: 4px solid #10b981;
+        }
+
+        .schedule-card.pending {
+            border-top-color: #f59e0b;
+        }
+
+        .schedule-card.posted {
+            border-top-color: #10b981;
+        }
+
+        .schedule-card h4 {
+            margin-bottom: 0.5rem;
+            color: #1e293b;
+        }
+
+        .schedule-meta {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 1rem;
+        }
+
+        .platform-badges {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .platform-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .platform-badge.instagram {
+            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+            color: white;
+        }
+
+        .platform-badge.facebook {
+            background: #1877f2;
+            color: white;
+        }
+
+        .platform-badge.twitter {
+            background: #1da1f2;
+            color: white;
+        }
+
+        .platform-badge.linkedin {
+            background: #0077b5;
+            color: white;
+        }
+
+        .platform-badge.tiktok {
+            background: linear-gradient(45deg, #ff0050, #00f2ea);
+            color: white;
+        }
+
+        .platform-badge.pinterest {
+            background: #e60023;
+            color: white;
+        }
+
+        .preview-section {
+            background: #f8f9ff;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .preview-section.active {
+            display: block;
+        }
+
+        .preview-content {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .preview-image {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 10px;
+            margin: 1rem 0;
+        }
+
+        .hashtag-cloud {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .hashtag {
+            padding: 0.5rem 1rem;
+            background: #e0e7ff;
+            color: #4c1d95;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .analytics-section {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            margin-top: 2rem;
+        }
+
+        .analytics-chart {
+            margin-top: 1.5rem;
+        }
+
+        .cost-calculator {
+            background: linear-gradient(135deg, #10b98122, #059669);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .cost-tiers {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .tier-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .tier-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #1e293b;
+        }
+
+        .tier-price {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+
+        .tier-features {
+            list-style: none;
+            padding: 0;
+        }
+
+        .tier-features li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .tier-features li:before {
+            content: "✓ ";
+            color: #10b981;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-content {
+            background: white;
+            padding: 3rem;
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        .spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-header {
+                padding: 2rem 1rem;
+            }
+
+            .dashboard-header h1 {
+                font-size: 1.8rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="social-dashboard">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <h1>🚀 Autonomous Social Media Content Creator</h1>
+            <p>AI-Powered Content Generation & Auto-Posting to All Major Platforms</p>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Posts</h3>
+                <div class="value" id="totalPosts">0</div>
+                <div class="change">+12% this month</div>
+            </div>
+            <div class="stat-card">
+                <h3>Scheduled</h3>
+                <div class="value" id="scheduledPosts">0</div>
+                <div class="change">Ready to post</div>
+            </div>
+            <div class="stat-card">
+                <h3>Avg. Engagement</h3>
+                <div class="value" id="avgEngagement">0%</div>
+                <div class="change">+8.5% this week</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Reach</h3>
+                <div class="value" id="totalReach">0</div>
+                <div class="change">+24% this month</div>
+            </div>
+        </div>
+
+        <!-- Content Generator -->
+        <div class="content-generator">
+            <h2>🎨 Generate New Content</h2>
+            
+            <div class="form-section">
+                <label for="contentTopic">Content Topic</label>
+                <input type="text" id="contentTopic" placeholder="Enter your content topic (e.g., Summer Travel Tips, Healthy Recipes, etc.)">
+            </div>
+
+            <div class="form-section">
+                <label for="contentType">Content Type</label>
+                <select id="contentType">
+                    <option value="image_post">Image Post</option>
+                    <option value="video_short">Short Video (TikTok/Reels/Shorts)</option>
+                    <option value="carousel">Carousel Post</option>
+                    <option value="story">Story</option>
+                </select>
+            </div>
+
+            <div class="form-section">
+                <label for="language">Language</label>
+                <select id="language">
+                    <option value="en">English</option>
+                    <option value="es">Spanish (Español)</option>
+                    <option value="fr">French (Français)</option>
+                    <option value="de">German (Deutsch)</option>
+                    <option value="ja">Japanese (日本語)</option>
+                    <option value="zh">Chinese (中文)</option>
+                    <option value="ar">Arabic (العربية)</option>
+                    <option value="pt">Portuguese (Português)</option>
+                    <option value="it">Italian (Italiano)</option>
+                    <option value="ko">Korean (한국어)</option>
+                </select>
+            </div>
+
+            <div class="form-section">
+                <label for="quality">Quality</label>
+                <select id="quality">
+                    <option value="free">Free (Flux Schnell - Fast & Free)</option>
+                    <option value="premium">Premium (DALL-E 3 / Best Quality)</option>
+                </select>
+            </div>
+
+            <div class="form-section">
+                <label>Target Platforms</label>
+                <div class="platform-selector">
+                    <div class="platform-option" data-platform="instagram">
+                        <input type="checkbox" id="platform-instagram" value="instagram">
+                        <label for="platform-instagram">📸 Instagram</label>
+                    </div>
+                    <div class="platform-option" data-platform="facebook">
+                        <input type="checkbox" id="platform-facebook" value="facebook">
+                        <label for="platform-facebook">👥 Facebook</label>
+                    </div>
+                    <div class="platform-option" data-platform="twitter">
+                        <input type="checkbox" id="platform-twitter" value="twitter">
+                        <label for="platform-twitter">🐦 Twitter/X</label>
+                    </div>
+                    <div class="platform-option" data-platform="linkedin">
+                        <input type="checkbox" id="platform-linkedin" value="linkedin">
+                        <label for="platform-linkedin">💼 LinkedIn</label>
+                    </div>
+                    <div class="platform-option" data-platform="tiktok">
+                        <input type="checkbox" id="platform-tiktok" value="tiktok">
+                        <label for="platform-tiktok">🎵 TikTok</label>
+                    </div>
+                    <div class="platform-option" data-platform="pinterest">
+                        <input type="checkbox" id="platform-pinterest" value="pinterest">
+                        <label for="platform-pinterest">📌 Pinterest</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <label for="scheduleTime">Schedule For</label>
+                <input type="datetime-local" id="scheduleTime">
+            </div>
+
+            <button class="generate-btn" id="generateContentBtn">
+                ✨ Generate & Schedule Content
+            </button>
+        </div>
+
+        <!-- Preview Section -->
+        <div class="preview-section" id="previewSection">
+            <h2>👀 Content Preview</h2>
+            <div class="preview-content" id="previewContent">
+                <!-- Preview will be injected here -->
+            </div>
+        </div>
+
+        <!-- Scheduled Content -->
+        <div class="analytics-section">
+            <h2>📅 Scheduled Content</h2>
+            <div class="schedule-grid" id="scheduleGrid">
+                <!-- Scheduled content cards will be injected here -->
+            </div>
+        </div>
+
+        <!-- Cost Calculator -->
+        <div class="cost-calculator">
+            <h2>💰 Cost Estimation</h2>
+            <p>Based on 600 posts per month (4 posts/day across 5 platforms)</p>
+            
+            <div class="cost-tiers">
+                <div class="tier-card">
+                    <h3>🆓 Free Tier</h3>
+                    <div class="tier-price">$0<span style="font-size: 1rem;">/month</span></div>
+                    <ul class="tier-features">
+                        <li>Flux Schnell image generation</li>
+                        <li>Basic video generation</li>
+                        <li>Free AI captions</li>
+                        <li>All platforms supported</li>
+                        <li>Unlimited posts</li>
+                        <li>Basic analytics</li>
+                        <li>Lower quality visuals</li>
+                        <li>Longer generation times</li>
+                    </ul>
+                </div>
+
+                <div class="tier-card" style="border: 3px solid #667eea;">
+                    <h3>⭐ Premium Tier</h3>
+                    <div class="tier-price">$106<span style="font-size: 1rem;">/month</span></div>
+                    <ul class="tier-features">
+                        <li>DALL-E 3 image generation</li>
+                        <li>Professional video (RunwayML)</li>
+                        <li>GPT-4 optimized captions</li>
+                        <li>All platforms supported</li>
+                        <li>Unlimited posts</li>
+                        <li>Advanced analytics</li>
+                        <li>Highest quality visuals</li>
+                        <li>Priority generation</li>
+                        <li>No watermarks</li>
+                        <li>3-5x higher engagement</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div style="margin-top: 1.5rem; padding: 1rem; background: white; border-radius: 10px;">
+                <h4>💡 Cost Breakdown (Premium):</h4>
+                <ul style="list-style: none; padding: 0;">
+                    <li>📸 Images: $16.80/month (420 images × $0.04)</li>
+                    <li>🎬 Videos: $90.00/month (180 videos × $0.50)</li>
+                    <li>✍️ Captions: $6.00/month (600 captions × $0.01)</li>
+                    <li style="font-weight: bold; border-top: 2px solid #e2e8f0; margin-top: 0.5rem; padding-top: 0.5rem;">
+                        💰 Total: $112.80/month
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Analytics -->
+        <div class="analytics-section" style="margin-top: 2rem;">
+            <h2>📊 Performance Analytics</h2>
+            <div class="analytics-chart" id="analyticsChart">
+                <p>Engagement metrics across all platforms will appear here...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <h3>Generating Content...</h3>
+            <p id="loadingText">Creating AI-optimized content for your platforms</p>
+        </div>
+    </div>
+
+    <script>
+        // Platform selection handling
+        document.querySelectorAll('.platform-option').forEach(option => {
+            option.addEventListener('click', function() {
+                const checkbox = this.querySelector('input[type="checkbox"]');
+                checkbox.checked = !checkbox.checked;
+                this.classList.toggle('selected', checkbox.checked);
+            });
+        });
+
+        // Generate content
+        document.getElementById('generateContentBtn').addEventListener('click', async function() {
+            const topic = document.getElementById('contentTopic').value;
+            const contentType = document.getElementById('contentType').value;
+            const language = document.getElementById('language').value;
+            const quality = document.getElementById('quality').value;
+            const scheduleTime = document.getElementById('scheduleTime').value;
+            
+            // Get selected platforms
+            const platforms = Array.from(document.querySelectorAll('.platform-option input:checked'))
+                .map(checkbox => checkbox.value);
+
+            if (!topic) {
+                alert('Please enter a content topic');
+                return;
+            }
+
+            if (platforms.length === 0) {
+                alert('Please select at least one platform');
+                return;
+            }
+
+            // Show loading
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            loadingOverlay.classList.add('active');
+
+            try {
+                const response = await fetch('/api/social-content/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    },
+                    body: JSON.stringify({
+                        topic: topic,
+                        content_type: contentType,
+                        language: language,
+                        quality: quality,
+                        platforms: platforms,
+                        schedule_time: scheduleTime
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Show preview
+                    displayPreview(data.content);
+                    
+                    // Refresh scheduled content
+                    loadScheduledContent();
+                    
+                    // Show success message
+                    alert('✅ Content generated and scheduled successfully!');
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to generate content. Please try again.');
+            } finally {
+                loadingOverlay.classList.remove('active');
+            }
+        });
+
+        // Display preview
+        function displayPreview(content) {
+            const previewSection = document.getElementById('previewSection');
+            const previewContent = document.getElementById('previewContent');
+            
+            let html = '<h3>' + content.topic + '</h3>';
+            
+            if (content.visual_url) {
+                html += `<img src="${content.visual_url}" class="preview-image" alt="Generated content">`;
+            }
+            
+            html += `<p><strong>Caption:</strong></p><p>${content.base_caption}</p>`;
+            
+            html += '<div class="hashtag-cloud">';
+            Object.values(content.platforms)[0].hashtags.forEach(tag => {
+                html += `<span class="hashtag">${tag}</span>`;
+            });
+            html += '</div>';
+            
+            html += '<div class="platform-badges" style="margin-top: 1rem;">';
+            Object.keys(content.platforms).forEach(platform => {
+                html += `<span class="platform-badge ${platform}">${platform}</span>`;
+            });
+            html += '</div>';
+            
+            previewContent.innerHTML = html;
+            previewSection.classList.add('active');
+        }
+
+        // Load scheduled content
+        async function loadScheduledContent() {
+            try {
+                const response = await fetch('/api/social-content/scheduled', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayScheduledContent(data.content);
+                }
+            } catch (error) {
+                console.error('Error loading scheduled content:', error);
+            }
+        }
+
+        // Display scheduled content
+        function displayScheduledContent(content) {
+            const scheduleGrid = document.getElementById('scheduleGrid');
+            
+            if (content.length === 0) {
+                scheduleGrid.innerHTML = '<p>No scheduled content yet. Generate your first post above!</p>';
+                return;
+            }
+            
+            let html = '';
+            content.forEach(item => {
+                const platforms = JSON.parse(item.target_platforms || '[]');
+                const badges = platforms.map(p => 
+                    `<span class="platform-badge ${p}">${p}</span>`
+                ).join('');
+                
+                html += `
+                    <div class="schedule-card ${item.status}">
+                        <h4>${item.topic}</h4>
+                        <div class="schedule-meta">
+                            📅 ${new Date(item.scheduled_time).toLocaleString()}<br>
+                            🌍 ${item.language.toUpperCase()} | ${item.content_type}
+                        </div>
+                        <div class="platform-badges">${badges}</div>
+                    </div>
+                `;
+            });
+            
+            scheduleGrid.innerHTML = html;
+        }
+
+        // Load stats
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/social-content/stats', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('totalPosts').textContent = data.stats.total_posts || 0;
+                    document.getElementById('scheduledPosts').textContent = data.stats.scheduled || 0;
+                    document.getElementById('avgEngagement').textContent = (data.stats.avg_engagement || 0) + '%';
+                    document.getElementById('totalReach').textContent = (data.stats.total_reach || 0).toLocaleString();
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadScheduledContent();
+            loadStats();
+            
+            // Set default schedule time (2 hours from now)
+            const defaultTime = new Date();
+            defaultTime.setHours(defaultTime.getHours() + 2);
+            document.getElementById('scheduleTime').value = defaultTime.toISOString().slice(0, 16);
+        });
+    </script>
+</body>
+</html>

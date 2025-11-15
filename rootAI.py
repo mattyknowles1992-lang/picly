@@ -18,28 +18,37 @@ import time
 from PIL import Image, ImageEnhance, ImageFilter
 try:
     import cv2
-except ImportError:
+    CV2_AVAILABLE = True
+except (ImportError, Exception):
     cv2 = None
-import numpy as np
+    CV2_AVAILABLE = False
 try:
     from skimage import exposure
-except ImportError:
+    SKIMAGE_AVAILABLE = True
+except (ImportError, Exception):
     exposure = None
+    SKIMAGE_AVAILABLE = False
 import io
 
 # Official AI SDKs
 try:
     from openai import OpenAI
-except ImportError:
+    OPENAI_AVAILABLE = True
+except (ImportError, Exception):
     OpenAI = None
+    OPENAI_AVAILABLE = False
 try:
     import replicate
+    REPLICATE_AVAILABLE = True
 except (ImportError, Exception):
     replicate = None
+    REPLICATE_AVAILABLE = False
 try:
     import stripe
-except ImportError:
+    STRIPE_AVAILABLE = True
+except (ImportError, Exception):
     stripe = None
+    STRIPE_AVAILABLE = False
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend requests
@@ -55,7 +64,7 @@ CONFIG = {
 }
 
 # Initialize Stripe
-if stripe and CONFIG['STRIPE_SECRET_KEY'] != 'your-stripe-secret-key-here':
+if stripe and STRIPE_AVAILABLE and CONFIG['STRIPE_SECRET_KEY'] != 'your-stripe-secret-key-here':
     stripe.api_key = CONFIG['STRIPE_SECRET_KEY']
 
 # Credit Packages (25% profit margin - competitive market pricing)
@@ -366,8 +375,8 @@ def create_checkout_session():
                     'currency': 'usd',
                     'unit_amount': int(package['price'] * 100),  # Convert to cents
                     'product_data': {
-                        'name': f\"{package['name']} Credit Package\",
-                        'description': f\"{package['credits']} Premium Credits for Ultra-Quality DALL-E 3 HD\",
+                        'name': f"{package['name']} Credit Package",
+                        'description': f"{package['credits']} Premium Credits for Ultra-Quality DALL-E 3 HD",
                     },
                 },
                 'quantity': 1,
@@ -539,8 +548,7 @@ def enhance_image(image_path, enhancement_level='medium'):
         
         # 2. Enhance contrast (simplified without cv2/scikit)
         if enhancement_level == 'heavy':
-            img_array = np.array(img)
-            # Simple contrast enhancement
+            # Simple contrast enhancement using PIL only
             enhancer = ImageEnhance.Contrast(img)
             img = enhancer.enhance(1.2)
         
@@ -902,65 +910,112 @@ def generate_with_replicate(prompt, negative_prompt='', dimensions={}, quality_b
             'demo': True
         }
     
-    # Using Flux Dev for higher quality (or Schnell for speed)
-    model = "black-forest-labs/flux-dev" if quality_boost else "black-forest-labs/flux-schnell"
+    # Using Flux Schnell (fast, free tier) - 4 second generation time
+    # Note: Flux Dev requires paid account, Schnell is free
     
     url = "https://api.replicate.com/v1/predictions"
     headers = {
         "Authorization": f"Token {api_key}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Prefer": "wait"  # Wait for result instead of polling
     }
+    
+    # Calculate aspect ratio
+    width = dimensions.get('width', 1024)
+    height = dimensions.get('height', 1024)
+    aspect_ratio = "1:1"  # Default square
+    if width > height:
+        aspect_ratio = "16:9"
+    elif height > width:
+        aspect_ratio = "9:16"
     
     input_params = {
         "prompt": prompt,
         "num_outputs": 1,
-        "aspect_ratio": f"{dimensions.get('width', 1024)}:{dimensions.get('height', 1024)}",
+        "aspect_ratio": aspect_ratio,
         "output_format": "png",
-        "output_quality": 100 if quality_boost else 80
+        "output_quality": 90
     }
     
+    # Flux Schnell doesn't support negative prompts, so add to main prompt
     if negative_prompt:
-        input_params["negative_prompt"] = negative_prompt
+        input_params["prompt"] = f"{prompt}. Avoid: {negative_prompt}"
     
     payload = {
-        "version": model,
+        "version": "5599ed30703defd1d160a25a63321b4dec97101d98b4674bcc56e41f62f35637",  # Flux Schnell stable version
         "input": input_params
     }
     
-    response = requests.post(url, headers=headers, json=payload)
-    response.raise_for_status()
-    
-    prediction = response.json()
-    prediction_id = prediction['id']
-    
-    # Poll for completion
-    import time
-    max_attempts = 120  # Increased for quality generation
-    for _ in range(max_attempts):
-        status_response = requests.get(
-            f"https://api.replicate.com/v1/predictions/{prediction_id}",
-            headers=headers
-        )
-        status_data = status_response.json()
+    try:
+        response = requests.post(url, headers=headers, json=payload, timeout=60)
+        response.raise_for_status()
         
-        if status_data['status'] == 'succeeded':
+        prediction = response.json()
+        
+        # If prediction is already complete (Prefer: wait), return immediately
+        if prediction.get('status') == 'succeeded' and prediction.get('output'):
             return {
                 'success': True,
-                'image_url': status_data['output'][0],
-                'engine': 'Flux Pro' if quality_boost else 'Flux Schnell'
-            }
-        elif status_data['status'] == 'failed':
-            return {
-                'success': False,
-                'error': 'Image generation failed'
+                'image_url': prediction['output'][0] if isinstance(prediction['output'], list) else prediction['output'],
+                'engine': 'Flux Schnell'
             }
         
-        time.sleep(1)
-    
-    return {
-        'success': False,
-        'error': 'Generation timeout'
-    }
+        # Otherwise poll for completion
+        prediction_id = prediction.get('id')
+        if not prediction_id:
+            return {
+                'success': False,
+                'error': 'No prediction ID returned from API'
+            }
+        
+        # Poll for completion (max 30 seconds for Schnell)
+        max_attempts = 30
+        for attempt in range(max_attempts):
+            status_response = requests.get(
+                f"https://api.replicate.com/v1/predictions/{prediction_id}",
+                headers={"Authorization": f"Token {api_key}"},
+                timeout=10
+            )
+            status_data = status_response.json()
+            
+            if status_data.get('status') == 'succeeded':
+                output = status_data.get('output')
+                if output:
+                    image_url = output[0] if isinstance(output, list) else output
+                    return {
+                        'success': True,
+                        'image_url': image_url,
+                        'engine': 'Flux Schnell'
+                    }
+            elif status_data.get('status') == 'failed':
+                error_detail = status_data.get('error', 'Unknown error')
+                return {
+                    'success': False,
+                    'error': f'Generation failed: {error_detail}'
+                }
+            
+            time.sleep(1)
+        
+        return {
+            'success': False,
+            'error': 'Generation timeout after 30 seconds'
+        }
+        
+    except requests.Timeout:
+        return {
+            'success': False,
+            'error': 'Request timeout - please try again'
+        }
+    except requests.RequestException as e:
+        return {
+            'success': False,
+            'error': f'API request failed: {str(e)}'
+        }
+    except Exception as e:
+        return {
+            'success': False,
+            'error': f'Unexpected error: {str(e)}'
+        }
 
 
 @app.route('/generated_images/<filename>')
@@ -1181,7 +1236,7 @@ if __name__ == '__main__':
     print("Add your API keys to the CONFIG dictionary in rootAI.py")
     print("=" * 60 + "\n")
     
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=False, host='0.0.0.0', port=5000)
 
 
 # ============ ADVANCED AI EDITOR ENDPOINTS ============

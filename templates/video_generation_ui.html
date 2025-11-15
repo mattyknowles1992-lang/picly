@@ -1,0 +1,819 @@
+<!-- Video Generation Modal -->
+<div id="videoGenerationModal" class="video-modal" style="display: none;">
+    <div class="modal-overlay" onclick="closeVideoModal()"></div>
+    <div class="modal-content video-modal-content">
+        <button class="modal-close" onclick="closeVideoModal()">&times;</button>
+        
+        <h2>🎬 Generate AI Video</h2>
+        <p class="modal-subtitle">Transform your image into stunning video</p>
+        
+        <!-- Step 1: Upload Image -->
+        <div class="video-step" id="step-upload">
+            <h3>Step 1: Upload Image</h3>
+            <div class="upload-zone" id="videoUploadZone">
+                <input type="file" id="videoImageInput" accept="image/*" style="display: none;" onchange="handleVideoImageUpload(event)">
+                <div class="upload-placeholder" onclick="document.getElementById('videoImageInput').click()">
+                    <div class="upload-icon">📸</div>
+                    <p>Click to upload image</p>
+                    <span class="upload-hint">PNG, JPG up to 10MB</span>
+                </div>
+                <img id="videoPreviewImage" style="display: none;" alt="Preview">
+            </div>
+        </div>
+        
+        <!-- Step 2: Video Settings -->
+        <div class="video-step" id="step-settings" style="display: none;">
+            <h3>Step 2: Video Settings</h3>
+            
+            <div class="video-setting">
+                <label>Motion Prompt</label>
+                <input 
+                    type="text" 
+                    id="videoPrompt" 
+                    placeholder="e.g., smooth camera zoom, gentle pan left, slow rotation"
+                    value="smooth camera movement, cinematic quality"
+                    class="video-input"
+                >
+                <p class="setting-hint">Describe how you want the video to move</p>
+            </div>
+            
+            <div class="video-setting">
+                <label>Duration</label>
+                <div class="duration-options">
+                    <button class="duration-btn active" data-duration="5" onclick="selectDuration(5)">
+                        <span class="duration-time">5 sec</span>
+                        <span class="duration-cost">30 tokens</span>
+                    </button>
+                    <button class="duration-btn" data-duration="8" onclick="selectDuration(8)">
+                        <span class="duration-time">8 sec</span>
+                        <span class="duration-cost">50 tokens</span>
+                        <span class="duration-badge">Popular</span>
+                    </button>
+                    <button class="duration-btn" data-duration="10" onclick="selectDuration(10)">
+                        <span class="duration-time">10 sec</span>
+                        <span class="duration-cost">60 tokens</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="video-setting">
+                <label>Examples</label>
+                <div class="prompt-examples">
+                    <button class="example-btn" onclick="usePrompt('smooth camera zoom in, cinematic')">🎥 Zoom In</button>
+                    <button class="example-btn" onclick="usePrompt('gentle pan right, slow motion')">➡️ Pan Right</button>
+                    <button class="example-btn" onclick="usePrompt('rotate 360 degrees, smooth')">🔄 Rotate</button>
+                    <button class="example-btn" onclick="usePrompt('fly through scene, epic')">✈️ Fly Through</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Cost Summary -->
+        <div class="cost-summary" id="costSummary" style="display: none;">
+            <div class="cost-row">
+                <span>Video Generation (Runway Gen-3)</span>
+                <span id="videoCost" class="cost-value">50 tokens</span>
+            </div>
+            <div class="cost-row">
+                <span>Your Balance</span>
+                <span id="videoBalance" class="cost-value">0 tokens</span>
+            </div>
+            <div class="cost-row total">
+                <span>After Generation</span>
+                <span id="videoAfter" class="cost-value">0 tokens</span>
+            </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="video-actions">
+            <button class="btn-secondary" onclick="closeVideoModal()">Cancel</button>
+            <button class="btn-primary" id="generateVideoBtn" onclick="generateVideo()" disabled>
+                <span id="generateBtnText">Upload Image First</span>
+                <span id="generateBtnSpinner" class="spinner" style="display: none;"></span>
+            </button>
+        </div>
+        
+        <!-- Progress -->
+        <div class="video-progress" id="videoProgress" style="display: none;">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <p class="progress-text" id="progressText">Generating video...</p>
+            <p class="progress-time">⏱️ This takes about 90 seconds</p>
+        </div>
+    </div>
+</div>
+
+<!-- Video Result Modal -->
+<div id="videoResultModal" class="video-modal" style="display: none;">
+    <div class="modal-overlay" onclick="closeVideoResult()"></div>
+    <div class="modal-content video-result-content">
+        <button class="modal-close" onclick="closeVideoResult()">&times;</button>
+        
+        <h2>✨ Your Video is Ready!</h2>
+        
+        <video id="resultVideo" controls autoplay loop class="result-video">
+            <source id="videoSource" src="" type="video/mp4">
+        </video>
+        
+        <div class="video-info">
+            <div class="info-row">
+                <span>Duration:</span>
+                <span id="resultDuration">8 seconds</span>
+            </div>
+            <div class="info-row">
+                <span>Engine:</span>
+                <span>Runway Gen-3 Alpha Turbo</span>
+            </div>
+            <div class="info-row">
+                <span>Quality:</span>
+                <span>10/10 ⭐</span>
+            </div>
+        </div>
+        
+        <div class="result-actions">
+            <button class="btn-download" onclick="downloadVideo()">
+                <span>⬇️ Download</span>
+            </button>
+            <button class="btn-share" onclick="shareVideo()">
+                <span>🔗 Share</span>
+            </button>
+            <button class="btn-rate" onclick="openRateVideo()">
+                <span>⭐ Rate Video</span>
+            </button>
+        </div>
+        
+        <button class="btn-primary" onclick="closeVideoResult(); openVideoModal()">
+            Generate Another Video
+        </button>
+    </div>
+</div>
+
+<style>
+.video-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+}
+
+.video-modal-content {
+    position: relative;
+    background: white;
+    border-radius: 20px;
+    padding: 2.5rem;
+    max-width: 600px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 100px rgba(0, 0, 0, 0.4);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(50px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-close {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.5rem;
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: #999;
+    cursor: pointer;
+    transition: color 0.2s;
+    padding: 0;
+    width: 35px;
+    height: 35px;
+    line-height: 1;
+}
+
+.modal-close:hover {
+    color: #333;
+}
+
+.video-modal-content h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 2rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.modal-subtitle {
+    color: #666;
+    margin: 0 0 2rem 0;
+}
+
+.video-step {
+    margin-bottom: 2rem;
+}
+
+.video-step h3 {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.upload-zone {
+    border: 3px dashed #e5e7eb;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: #f9fafb;
+}
+
+.upload-zone:hover {
+    border-color: #667eea;
+    background: #f3f4ff;
+}
+
+.upload-zone.has-image {
+    border-color: #10b981;
+    background: #ecfdf5;
+}
+
+.upload-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.upload-placeholder p {
+    font-size: 1.1rem;
+    color: #333;
+    margin: 0 0 0.5rem 0;
+}
+
+.upload-hint {
+    color: #999;
+    font-size: 0.9rem;
+}
+
+#videoPreviewImage {
+    max-width: 100%;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+
+.video-setting {
+    margin-bottom: 1.5rem;
+}
+
+.video-setting label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.video-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.video-input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.setting-hint {
+    color: #999;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+.duration-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.duration-btn {
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.duration-btn:hover {
+    border-color: #667eea;
+    transform: translateY(-2px);
+}
+
+.duration-btn.active {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.duration-time {
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.duration-cost {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.duration-badge {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: #f59e0b;
+    color: white;
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.prompt-examples {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+}
+
+.example-btn {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+    text-align: left;
+}
+
+.example-btn:hover {
+    background: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+.cost-summary {
+    background: #f9fafb;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.cost-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    color: #666;
+}
+
+.cost-row.total {
+    border-top: 2px solid #e5e7eb;
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    font-weight: 700;
+    color: #333;
+    font-size: 1.1rem;
+}
+
+.cost-value {
+    font-weight: 600;
+    color: #667eea;
+}
+
+.video-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn-secondary, .btn-primary {
+    flex: 1;
+    padding: 1rem;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+
+.btn-secondary {
+    background: #f3f4f6;
+    color: #666;
+}
+
+.btn-secondary:hover {
+    background: #e5e7eb;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.spinner {
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top: 3px solid white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+    margin-left: 0.5rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.video-progress {
+    margin-top: 1.5rem;
+}
+
+.progress-bar {
+    background: #e5e7eb;
+    height: 8px;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+}
+
+.progress-fill {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s;
+}
+
+.progress-text {
+    text-align: center;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.progress-time {
+    text-align: center;
+    color: #999;
+    font-size: 0.9rem;
+    margin: 0.5rem 0 0 0;
+}
+
+/* Video Result Styles */
+.video-result-content {
+    max-width: 700px;
+}
+
+.result-video {
+    width: 100%;
+    border-radius: 12px;
+    margin: 1.5rem 0;
+    background: #000;
+}
+
+.video-info {
+    background: #f9fafb;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    color: #666;
+}
+
+.info-row span:last-child {
+    font-weight: 600;
+    color: #333;
+}
+
+.result-actions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.btn-download, .btn-share, .btn-rate {
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 600;
+}
+
+.btn-download:hover {
+    border-color: #10b981;
+    color: #10b981;
+}
+
+.btn-share:hover {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.btn-rate:hover {
+    border-color: #f59e0b;
+    color: #f59e0b;
+}
+
+@media (max-width: 768px) {
+    .duration-options {
+        grid-template-columns: 1fr;
+    }
+    
+    .prompt-examples {
+        grid-template-columns: 1fr;
+    }
+    
+    .result-actions {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<script>
+let videoState = {
+    imagePath: null,
+    imageFile: null,
+    duration: 8,
+    prompt: 'smooth camera movement, cinematic quality',
+    userTokens: 0
+};
+
+function openVideoModal() {
+    document.getElementById('videoGenerationModal').style.display = 'flex';
+    updateUserBalance();
+}
+
+function closeVideoModal() {
+    document.getElementById('videoGenerationModal').style.display = 'none';
+    resetVideoModal();
+}
+
+function resetVideoModal() {
+    document.getElementById('step-upload').style.display = 'block';
+    document.getElementById('step-settings').style.display = 'none';
+    document.getElementById('costSummary').style.display = 'none';
+    document.getElementById('videoProgress').style.display = 'none';
+    document.getElementById('videoPreviewImage').style.display = 'none';
+    document.querySelector('.upload-placeholder').style.display = 'block';
+    document.getElementById('generateVideoBtn').disabled = true;
+    document.getElementById('generateBtnText').textContent = 'Upload Image First';
+    videoState = {
+        imagePath: null,
+        imageFile: null,
+        duration: 8,
+        prompt: 'smooth camera movement, cinematic quality',
+        userTokens: 0
+    };
+}
+
+function handleVideoImageUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    // Validate file size (10MB max)
+    if (file.size > 10 * 1024 * 1024) {
+        alert('Image must be less than 10MB');
+        return;
+    }
+    
+    videoState.imageFile = file;
+    
+    // Show preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const preview = document.getElementById('videoPreviewImage');
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+        document.querySelector('.upload-placeholder').style.display = 'none';
+        document.getElementById('videoUploadZone').classList.add('has-image');
+        
+        // Show next steps
+        document.getElementById('step-settings').style.display = 'block';
+        document.getElementById('costSummary').style.display = 'block';
+        document.getElementById('generateVideoBtn').disabled = false;
+        document.getElementById('generateBtnText').textContent = '🎬 Generate Video';
+        
+        updateCostSummary();
+    };
+    reader.readAsDataURL(file);
+}
+
+function selectDuration(duration) {
+    videoState.duration = duration;
+    
+    // Update button states
+    document.querySelectorAll('.duration-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (parseInt(btn.dataset.duration) === duration) {
+            btn.classList.add('active');
+        }
+    });
+    
+    updateCostSummary();
+}
+
+function usePrompt(prompt) {
+    document.getElementById('videoPrompt').value = prompt;
+    videoState.prompt = prompt;
+}
+
+function updateUserBalance() {
+    // Fetch user's token balance
+    fetch('/api/auth/validate')
+        .then(res => res.json())
+        .then(data => {
+            if (data.valid) {
+                fetch('/api/user/credits')
+                    .then(res => res.json())
+                    .then(credits => {
+                        videoState.userTokens = credits.premium_credits || 0;
+                        updateCostSummary();
+                    });
+            }
+        });
+}
+
+function updateCostSummary() {
+    const costs = {
+        5: 30,
+        8: 50,
+        10: 60
+    };
+    
+    const cost = costs[videoState.duration];
+    const balance = videoState.userTokens;
+    const after = balance - cost;
+    
+    document.getElementById('videoCost').textContent = `${cost} tokens`;
+    document.getElementById('videoBalance').textContent = `${balance} tokens`;
+    document.getElementById('videoAfter').textContent = `${after} tokens`;
+    
+    // Update button state
+    const btn = document.getElementById('generateVideoBtn');
+    if (after < 0) {
+        btn.disabled = true;
+        document.getElementById('generateBtnText').textContent = '❌ Insufficient Tokens';
+    } else if (!videoState.imageFile) {
+        btn.disabled = true;
+        document.getElementById('generateBtnText').textContent = 'Upload Image First';
+    } else {
+        btn.disabled = false;
+        document.getElementById('generateBtnText').textContent = '🎬 Generate Video';
+    }
+}
+
+async function generateVideo() {
+    const btn = document.getElementById('generateVideoBtn');
+    const prompt = document.getElementById('videoPrompt').value || videoState.prompt;
+    
+    // Disable button
+    btn.disabled = true;
+    document.getElementById('generateBtnText').style.display = 'none';
+    document.getElementById('generateBtnSpinner').style.display = 'inline-block';
+    
+    // Show progress
+    document.getElementById('videoProgress').style.display = 'block';
+    
+    // Simulate progress (90 seconds)
+    let progress = 0;
+    const progressInterval = setInterval(() => {
+        progress += 1.1;  // ~90 seconds to 100%
+        document.getElementById('progressFill').style.width = Math.min(progress, 95) + '%';
+    }, 1000);
+    
+    try {
+        // Upload image first
+        const formData = new FormData();
+        formData.append('image', videoState.imageFile);
+        formData.append('prompt', prompt);
+        formData.append('duration', videoState.duration);
+        
+        const response = await fetch('/api/generate-video', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        clearInterval(progressInterval);
+        document.getElementById('progressFill').style.width = '100%';
+        
+        if (result.success) {
+            // Show result modal
+            setTimeout(() => {
+                closeVideoModal();
+                showVideoResult(result);
+            }, 500);
+        } else {
+            alert('Error generating video: ' + result.error);
+            // Re-enable button
+            btn.disabled = false;
+            document.getElementById('generateBtnText').style.display = 'inline';
+            document.getElementById('generateBtnSpinner').style.display = 'none';
+            document.getElementById('videoProgress').style.display = 'none';
+        }
+    } catch (error) {
+        clearInterval(progressInterval);
+        alert('Error: ' + error.message);
+        btn.disabled = false;
+        document.getElementById('generateBtnText').style.display = 'inline';
+        document.getElementById('generateBtnSpinner').style.display = 'none';
+        document.getElementById('videoProgress').style.display = 'none';
+    }
+}
+
+function showVideoResult(result) {
+    document.getElementById('videoResultModal').style.display = 'flex';
+    document.getElementById('videoSource').src = result.video_url;
+    document.getElementById('resultVideo').load();
+    document.getElementById('resultDuration').textContent = result.duration + ' seconds';
+    
+    // Store for rating
+    videoState.resultUrl = result.video_url;
+}
+
+function closeVideoResult() {
+    document.getElementById('videoResultModal').style.display = 'none';
+    document.getElementById('resultVideo').pause();
+}
+
+function downloadVideo() {
+    const videoUrl = videoState.resultUrl;
+    const link = document.createElement('a');
+    link.href = videoUrl;
+    link.download = 'picly-video-' + Date.now() + '.mp4';
+    link.click();
+}
+
+function shareVideo() {
+    const videoUrl = videoState.resultUrl;
+    if (navigator.share) {
+        navigator.share({
+            title: 'Check out my AI-generated video!',
+            url: videoUrl
+        });
+    } else {
+        navigator.clipboard.writeText(videoUrl);
+        alert('Video link copied to clipboard!');
+    }
+}
+
+function openRateVideo() {
+    // Open rating modal (integrate with rating_component.html)
+    console.log('Open video rating');
+}
+</script>

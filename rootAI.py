@@ -67,6 +67,7 @@ CONFIG = {
     'STABILITY_API_KEY': os.getenv('STABILITY_API_KEY', 'your-stability-key-here'),
     'REPLICATE_API_KEY': os.getenv('REPLICATE_API_KEY', 'your-replicate-key-here'),
     'HUGGINGFACE_API_KEY': os.getenv('HUGGINGFACE_API_KEY', 'your-huggingface-key-here'),
+    'RUNWAY_API_KEY': os.getenv('RUNWAY_API_KEY', 'your-runway-key-here'),
     'STRIPE_SECRET_KEY': os.getenv('STRIPE_SECRET_KEY', 'your-stripe-secret-key-here'),
     'STRIPE_PUBLISHABLE_KEY': os.getenv('STRIPE_PUBLISHABLE_KEY', 'your-stripe-publishable-key-here'),
     'STRIPE_WEBHOOK_SECRET': os.getenv('STRIPE_WEBHOOK_SECRET', 'your-webhook-secret-here'),
@@ -671,6 +672,24 @@ def generate_image():
     }
     """
     try:
+        # CRITICAL PROTECTION 1: Check emergency shutdown mode
+        if cost_monitor.emergency_mode:
+            return jsonify({
+                'success': False,
+                'error': 'Service temporarily unavailable due to high costs. Please try again later.',
+                'emergency_mode': True
+            }), 503
+        
+        # CRITICAL PROTECTION 2: Check cost alerts
+        alerts = cost_monitor.check_cost_alerts()
+        if alerts.get('daily_limit_exceeded'):
+            cost_monitor.activate_emergency_mode()
+            return jsonify({
+                'success': False,
+                'error': 'Daily cost limit exceeded. Service paused.',
+                'emergency_mode': True
+            }), 503
+        
         # Check user authentication first
         session_token = request.cookies.get('session_token')
         user_id = None
@@ -1648,7 +1667,165 @@ def colorize_image(image_path):
         return image_path
 
 
+# ============ VIDEO GENERATION - RUNWAY GEN-3 ============
+
+def generate_video_runway(image_path, prompt, duration=5):
+    """
+    Generate video from image using Runway Gen-3 Alpha Turbo
+    Quality: 10/10 (industry-leading)
+    Cost: $0.05/second = $0.25 for 5s, $0.40 for 8s
+    """
+    api_key = CONFIG['RUNWAY_API_KEY']
+    
+    if api_key == 'your-runway-key-here':
+        return {
+            'success': False,
+            'error': 'Runway API key not configured',
+            'demo': True
+        }
+    
+    url = "https://api.runwayml.com/v1/generations"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+        "X-Runway-Version": "2024-11-06"
+    }
+    
+    # Read and encode image
+    import base64
+    with open(image_path, 'rb') as f:
+        image_data = base64.b64encode(f.read()).decode('utf-8')
+    
+    payload = {
+        "model": "gen3a_turbo",  # Gen-3 Alpha Turbo (fastest, high quality)
+        "prompt": prompt,
+        "init_image": f"data:image/png;base64,{image_data}",
+        "duration": duration,  # 5 or 10 seconds
+        "ratio": "16:9",
+        "watermark": False
+    }
+    
+    try:
+        # Submit generation request
+        response = requests.post(url, headers=headers, json=payload, timeout=30)
+        response.raise_for_status()
+        data = response.json()
+        
+        task_id = data.get('id')
+        if not task_id:
+            return {'success': False, 'error': 'No task ID returned'}
+        
+        # Poll for completion (Gen-3 Turbo takes ~90 seconds)
+        max_attempts = 120  # 2 minutes max
+        for attempt in range(max_attempts):
+            time.sleep(2)
+            
+            status_response = requests.get(
+                f"{url}/{task_id}",
+                headers=headers,
+                timeout=10
+            )
+            
+            if status_response.status_code == 200:
+                status_data = status_response.json()
+                
+                if status_data.get('status') == 'succeeded':
+                    video_url = status_data.get('output', [{}])[0].get('url')
+                    if video_url:
+                        # Calculate cost: $0.05 per second
+                        cost = duration * 0.05
+                        
+                        return {
+                            'success': True,
+                            'video_url': video_url,
+                            'duration': duration,
+                            'engine': 'Runway Gen-3 Alpha Turbo',
+                            'quality': '10/10',
+                            'api_cost': cost
+                        }
+                
+                elif status_data.get('status') == 'failed':
+                    error = status_data.get('failure_reason', 'Unknown error')
+                    return {'success': False, 'error': f'Generation failed: {error}'}
+        
+        return {'success': False, 'error': 'Video generation timeout'}
+        
+    except requests.RequestException as e:
+        return {'success': False, 'error': f'Runway API error: {str(e)}'}
+    except Exception as e:
+        return {'success': False, 'error': f'Unexpected error: {str(e)}'}
+
+
+@app.route('/api/generate-video', methods=['POST'])
+def generate_video():
+    """Generate video from image using premium AI"""
+    try:
+        # Check authentication
+        session_token = request.cookies.get('session_token')
+        if not session_token:
+            return jsonify({'success': False, 'error': 'Must be logged in'}), 401
+        
+        validation = user_db.validate_session(session_token)
+        if not validation.get('valid'):
+            return jsonify({'success': False, 'error': 'Invalid session'}), 401
+        
+        user_id = validation['user_id']
+        
+        # Check credits (video costs 40 tokens = $0.40 for 8s)
+        credits = user_db.get_user_credits(user_id)
+        if not credits.get('success'):
+            return jsonify({'success': False, 'error': 'Could not check credits'}), 500
+        
+        video_cost = 40  # 40 tokens for 8-second video
+        if credits.get('premium_credits', 0) < video_cost:
+            return jsonify({
+                'success': False,
+                'error': f'Insufficient credits. Video requires {video_cost} tokens.',
+                'require_purchase': True
+            }), 402
+        
+        # Get image path and prompt
+        image_path = request.form.get('image_path')
+        prompt = request.form.get('prompt', 'smooth camera movement, high quality')
+        duration = int(request.form.get('duration', 8))  # 5, 8, or 10 seconds
+        
+        if not image_path:
+            return jsonify({'success': False, 'error': 'No image provided'}), 400
+        
+        # Generate video
+        result = generate_video_runway(image_path, prompt, duration)
+        
+        if result.get('success'):
+            # Deduct credits
+            for _ in range(video_cost):
+                user_db.use_credit(user_id, 'premium')
+            
+            # Log API cost
+            api_cost = result.get('api_cost', 0.40)
+            cost_monitor.log_api_cost(
+                user_id=user_id,
+                api_service='runway',
+                operation='gen3_turbo',
+                cost=api_cost,
+                success=True
+            )
+            
+            result['credits_used'] = video_cost
+            return jsonify(result)
+        else:
+            # Refund on failure
+            return jsonify(result), 500
+            
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 # ============ ADMIN DASHBOARD - COST MONITORING ============
+
+@app.route('/admin/dashboard')
+def admin_dashboard():
+    """Serve admin cost monitoring dashboard"""
+    return render_template('admin_dashboard.html')
 
 @app.route('/api/admin/cost-stats', methods=['GET'])
 def get_cost_stats():

@@ -2048,6 +2048,7 @@ def generate_video():
 
 
 # ============ ADMIN DASHBOARD - COST MONITORING ============
+# Fixed: Removed duplicate admin_dashboard route (was causing deployment error)
 
 @app.route('/api/admin/cost-stats', methods=['GET'])
 def get_cost_stats():

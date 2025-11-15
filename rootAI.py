@@ -1093,40 +1093,45 @@ def generate_with_huggingface(prompt, negative_prompt='', dimensions={}):
     """Generate image using Hugging Face Inference API (completely free, no credit card needed)"""
     api_key = CONFIG.get('HUGGINGFACE_API_KEY', 'your-huggingface-key-here')
     
-    # Hugging Face has truly free models - no payment required!
-    # Using Stable Diffusion XL on Hugging Face Inference API
+    # Using Flux Schnell (free, fast model on Hugging Face)
+    # Alternative: black-forest-labs/FLUX.1-schnell (latest free model)
     
     if api_key == 'your-huggingface-key-here':
         # Use public endpoint without auth (rate limited but free)
-        api_url = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0"
-        headers = {}
+        api_url = "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell"
+        headers = {"Content-Type": "application/json"}
     else:
         # Use authenticated endpoint (higher rate limits)
-        api_url = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0"
-        headers = {"Authorization": f"Bearer {api_key}"}
+        api_url = "https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell"
+        headers = {
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json"
+        }
     
     # Build full prompt with negative prompt
     full_prompt = prompt
     if negative_prompt:
-        full_prompt = f"{prompt}. Negative prompt: {negative_prompt}"
+        full_prompt = f"{prompt}. Avoid: {negative_prompt}"
     
     payload = {
         "inputs": full_prompt,
         "parameters": {
-            "num_inference_steps": 25,
-            "guidance_scale": 7.5,
+            "num_inference_steps": 4,  # Schnell is optimized for 1-4 steps
+            "guidance_scale": 0.0,  # Schnell works best without guidance
         }
     }
     
     try:
         # Hugging Face API returns image bytes directly
-        response = requests.post(api_url, headers=headers, json=payload, timeout=60)
+        response = requests.post(api_url, headers=headers, json=payload, timeout=90)
         
         # Handle model loading (503)
         if response.status_code == 503:
-            # Model is loading, wait and retry once
-            time.sleep(10)
-            response = requests.post(api_url, headers=headers, json=payload, timeout=60)
+            error_data = response.json() if response.content else {}
+            estimated_time = error_data.get('estimated_time', 20)
+            print(f"Model loading, waiting {estimated_time} seconds...")
+            time.sleep(min(estimated_time + 5, 30))  # Wait but cap at 30 seconds
+            response = requests.post(api_url, headers=headers, json=payload, timeout=90)
         
         response.raise_for_status()
         
@@ -1143,14 +1148,52 @@ def generate_with_huggingface(prompt, negative_prompt='', dimensions={}):
         return {
             'success': True,
             'image_url': f'/generated_images/{filename}',
-            'engine': 'Stable Diffusion XL (Free)',
-            'quality_tier': 'Free Tier (8.5/10)'
+            'engine': 'Flux Schnell (Free)',
+            'quality_tier': 'Free Tier (9.0/10)'
         }
         
     except requests.RequestException as e:
+        error_msg = str(e)
+        # If this model also fails, try one more fallback
+        if '410' in error_msg or 'Gone' in error_msg:
+            # Try Stable Diffusion 2.1 as final fallback
+            try:
+                fallback_url = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2-1"
+                fallback_headers = headers.copy()
+                fallback_payload = {
+                    "inputs": full_prompt,
+                    "parameters": {
+                        "num_inference_steps": 20,
+                        "guidance_scale": 7.5,
+                    }
+                }
+                fallback_response = requests.post(fallback_url, headers=fallback_headers, json=fallback_payload, timeout=90)
+                
+                if fallback_response.status_code == 503:
+                    time.sleep(20)
+                    fallback_response = requests.post(fallback_url, headers=fallback_headers, json=fallback_payload, timeout=90)
+                
+                fallback_response.raise_for_status()
+                
+                filename = f"generated_{datetime.now().strftime('%Y%m%d_%H%M%S')}.png"
+                filepath = os.path.join('generated_images', filename)
+                os.makedirs('generated_images', exist_ok=True)
+                
+                with open(filepath, 'wb') as f:
+                    f.write(fallback_response.content)
+                
+                return {
+                    'success': True,
+                    'image_url': f'/generated_images/{filename}',
+                    'engine': 'Stable Diffusion 2.1 (Free)',
+                    'quality_tier': 'Free Tier (8.5/10)'
+                }
+            except:
+                pass
+        
         return {
             'success': False,
-            'error': f'Hugging Face API error: {str(e)}'
+            'error': f'Hugging Face API error: {error_msg}'
         }
     except Exception as e:
         return {

@@ -129,7 +129,13 @@
                 <a href="index.html" class="nav-link active">Generator</a>
                 <a href="editor.html" class="nav-link">Editor Pro</a>
             </div>
-            <div class="nav-actions" id="navActions" style="display: none;">
+            <div class="nav-actions" id="navActions">
+                <!-- Auth buttons (shown when NOT logged in) -->
+                <div class="auth-buttons" id="authButtons">
+                    <button class="nav-btn" id="loginBtn">Sign In</button>
+                    <button class="nav-btn primary" id="registerBtnNav">Sign Up</button>
+                </div>
+                
                 <!-- Credit Display (shown when logged in) -->
                 <div class="credit-display" id="creditDisplay" style="display: none;">
                     <div class="credit-item">
@@ -145,6 +151,7 @@
                         Unlimited
                     </div>
                     <button class="buy-credits-btn" id="buyCreditsBtn">Buy Credits</button>
+                    <button class="nav-btn logout" id="logoutBtn">Logout</button>
                 </div>
             </div>
             <div class="nav-user" id="navUser" style="display: none;">

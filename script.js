@@ -4,9 +4,38 @@
 
 // Check authentication on page load
 async function checkAuth() {
-    // Show content to everyone - no authentication required
+    try {
+        const response = await fetch('/api/auth/validate', {
+            method: 'GET',
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.authenticated) {
+                // User is logged in - show credits, hide auth buttons
+                document.getElementById('authButtons').style.display = 'none';
+                document.getElementById('creditDisplay').style.display = 'flex';
+                // Update credit display with user data
+                await updateCredits();
+            } else {
+                // Not logged in - show auth buttons, hide credits
+                document.getElementById('authButtons').style.display = 'flex';
+                document.getElementById('creditDisplay').style.display = 'none';
+            }
+        } else {
+            // Not logged in - show auth buttons
+            document.getElementById('authButtons').style.display = 'flex';
+            document.getElementById('creditDisplay').style.display = 'none';
+        }
+    } catch (error) {
+        // Error or not logged in - show auth buttons
+        document.getElementById('authButtons').style.display = 'flex';
+        document.getElementById('creditDisplay').style.display = 'none';
+    }
+    
+    // Always show main content and nav
     document.getElementById('mainContent').style.display = 'block';
-    document.getElementById('navActions').style.display = 'none';
     document.getElementById('navLinks').style.display = 'flex';
 }
 
@@ -22,6 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const loginBtn = document.getElementById('loginBtn');
     const registerBtn = document.getElementById('registerBtn');
+    const registerBtnNav = document.getElementById('registerBtnNav');
     const logoutBtn = document.getElementById('logoutBtn');
     const loginModal = document.getElementById('loginModal');
     const registerModal = document.getElementById('registerModal');
@@ -39,6 +69,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (registerBtn) {
         registerBtn.addEventListener('click', () => {
+            registerModal.classList.add('show');
+        });
+    }
+    
+    if (registerBtnNav) {
+        registerBtnNav.addEventListener('click', () => {
             registerModal.classList.add('show');
         });
     }
@@ -137,18 +173,41 @@ document.addEventListener('DOMContentLoaded', () => {
                     credentials: 'include'
                 });
                 
-                document.getElementById('mainContent').style.display = 'none';
-                document.getElementById('navUser').style.display = 'none';
-                document.getElementById('navActions').style.display = 'flex';
-                document.getElementById('navLinks').style.display = 'none';
-                loginModal.classList.add('show');
+                // Show auth buttons, hide credits
+                document.getElementById('authButtons').style.display = 'flex';
+                document.getElementById('creditDisplay').style.display = 'none';
+                
                 showNotification('Logged out successfully');
+                
+                // Reload page to reset state
+                setTimeout(() => location.reload(), 1000);
             } catch (error) {
-                showNotification('Logout error: ' + error.message);
+                showNotification('Logout error: ' + error.message, 'error');
             }
         });
     }
 });
+
+// Function to update credit display
+async function updateCredits() {
+    try {
+        const response = await fetch('/api/credits/balance', {
+            method: 'GET',
+            credentials: 'include'
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            const creditCountElement = document.getElementById('creditCount');
+            if (creditCountElement) {
+                const totalCredits = (data.free_credits || 0) + (data.premium_credits || 0);
+                creditCountElement.textContent = totalCredits;
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching credits:', error);
+    }
+}
 
 // ============================================
 // PROMPT LIBRARY AND IMAGE GENERATION
@@ -1198,20 +1257,11 @@ function handleRegister(event) {
 }
 
 function updateUIForLoggedInUser() {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    if (user.loggedIn) {
-        const loginBtn = document.getElementById('loginBtn');
-        const registerBtn = document.getElementById('registerBtn');
-        
-        loginBtn.textContent = user.name || user.email.split('@')[0];
-        loginBtn.onclick = () => {
-            if (confirm('Sign out?')) {
-                localStorage.removeItem('user');
-                location.reload();
-            }
-        };
-        registerBtn.style.display = 'none';
-    }
+    // Hide auth buttons, show credit display
+    document.getElementById('authButtons').style.display = 'none';
+    document.getElementById('creditDisplay').style.display = 'flex';
+    // Update credits
+    updateCredits();
 }
 
 // ============================================

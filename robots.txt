@@ -1,0 +1,38 @@
+# AI Image Generator - Robots.txt
+# Allow search engines to index everything
+
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://yourdomain.com/sitemap.xml
+
+# Block access to admin areas (if you add them)
+Disallow: /admin/
+Disallow: /api/
+
+# Crawl delay to prevent server overload
+Crawl-delay: 1
+
+# Special directives for major search engines
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+User-agent: Yahoo! Slurp
+Allow: /
+Crawl-delay: 2
+
+# Block bad bots
+User-agent: AhrefsBot
+Crawl-delay: 5
+
+User-agent: SemrushBot
+Crawl-delay: 5

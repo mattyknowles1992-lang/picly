@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image Editor Pro - Next-Gen Editor</title>
+    <link rel="stylesheet" href="editor-styles.css">
+</head>
+<body>
+    <div class="editor-container">
+        <!-- Top Toolbar -->
+        <header class="top-toolbar">
+            <div class="logo">
+                <h1>🎨 AI Editor Pro</h1>
+                <span class="version">v2.0</span>
+                <a href="index.html" class="back-link">← Back to Generator</a>
+            </div>
+            <div class="main-actions">
+                <button class="btn btn-primary" onclick="openImage()">📁 Open Image</button>
+                <button class="btn btn-secondary" onclick="saveImage()">💾 Save</button>
+                <button class="btn btn-secondary" onclick="exportImage()">📤 Export</button>
+            </div>
+            <div class="history-controls">
+                <button class="btn-icon" onclick="undo()" title="Undo (Ctrl+Z)">↶</button>
+                <button class="btn-icon" onclick="redo()" title="Redo (Ctrl+Y)">↷</button>
+            </div>
+        </header>
+
+        <div class="main-layout">
+            <!-- Left Sidebar - Tools -->
+            <aside class="left-sidebar">
+                <div class="tool-section">
+                    <h3>🛠️ Tools</h3>
+                    <div class="tool-grid">
+                        <button class="tool-btn active" data-tool="select" title="Select Tool (V)">
+                            <span class="icon">⬚</span>
+                            <span>Select</span>
+                        </button>
+                        <button class="tool-btn" data-tool="brush" title="Brush Tool (B)">
+                            <span class="icon">🖌️</span>
+                            <span>Brush</span>
+                        </button>
+                        <button class="tool-btn" data-tool="eraser" title="Eraser (E)">
+                            <span class="icon">⌫</span>
+                            <span>Eraser</span>
+                        </button>
+                        <button class="tool-btn" data-tool="inpaint" title="Inpaint (I)">
+                            <span class="icon">🎯</span>
+                            <span>Inpaint</span>
+                        </button>
+                        <button class="tool-btn" data-tool="object-remove" title="Object Removal (R)">
+                            <span class="icon">🗑️</span>
+                            <span>Remove</span>
+                        </button>
+                        <button class="tool-btn" data-tool="clone" title="Clone Stamp (S)">
+                            <span class="icon">📋</span>
+                            <span>Clone</span>
+                        </button>
+                        <button class="tool-btn" data-tool="magic-wand" title="Magic Selection (W)">
+                            <span class="icon">✨</span>
+                            <span>Magic</span>
+                        </button>
+                        <button class="tool-btn" data-tool="text" title="Text Tool (T)">
+                            <span class="icon">T</span>
+                            <span>Text</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="tool-section">
+                    <h3>🤖 AI Tools</h3>
+                    <div class="ai-tools">
+                        <button class="ai-btn" onclick="removeBackground()">
+                            <span class="icon">🎭</span>
+                            Remove Background
+                        </button>
+                        <button class="ai-btn" onclick="enhanceFace()">
+                            <span class="icon">👤</span>
+                            Enhance Face
+                        </button>
+                        <button class="ai-btn" onclick="upscaleImage()">
+                            <span class="icon">⬆️</span>
+                            Upscale (4x)
+                        </button>
+                        <button class="ai-btn" onclick="styleTransfer()">
+                            <span class="icon">🎨</span>
+                            Style Transfer
+                        </button>
+                        <button class="ai-btn" onclick="autoEnhance()">
+                            <span class="icon">⚡</span>
+                            Auto Enhance
+                        </button>
+                        <button class="ai-btn" onclick="colorize()">
+                            <span class="icon">🌈</span>
+                            Colorize B&W
+                        </button>
+                    </div>
+                </div>
+
+                <div class="tool-section">
+                    <h3>⚙️ Brush Settings</h3>
+                    <div class="slider-group">
+                        <label>Size: <span id="brush-size-value">50</span>px</label>
+                        <input type="range" id="brush-size" min="1" max="300" value="50">
+                    </div>
+                    <div class="slider-group">
+                        <label>Opacity: <span id="opacity-value">100</span>%</label>
+                        <input type="range" id="opacity" min="1" max="100" value="100">
+                    </div>
+                    <div class="slider-group">
+                        <label>Hardness: <span id="hardness-value">50</span>%</label>
+                        <input type="range" id="hardness" min="0" max="100" value="50">
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Center Canvas Area -->
+            <main class="canvas-area">
+                <div class="canvas-container">
+                    <div class="canvas-wrapper" id="canvas-wrapper">
+                        <canvas id="main-canvas"></canvas>
+                        <canvas id="overlay-canvas"></canvas>
+                        <div class="empty-state" id="empty-state">
+                            <div class="empty-content">
+                                <span class="empty-icon">🖼️</span>
+                                <h2>No Image Loaded</h2>
+                                <p>Open an image or drag & drop here</p>
+                                <button class="btn btn-primary" onclick="openImage()">Open Image</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bottom Zoom Controls -->
+                <div class="zoom-controls">
+                    <button class="btn-icon" onclick="zoomOut()">−</button>
+                    <span class="zoom-level" id="zoom-level">100%</span>
+                    <button class="btn-icon" onclick="zoomIn()">+</button>
+                    <button class="btn-icon" onclick="fitToScreen()">⊡</button>
+                </div>
+
+                <!-- Loading Overlay -->
+                <div class="loading-overlay" id="loading-overlay" style="display: none;">
+                    <div class="spinner"></div>
+                    <p id="loading-text">Processing...</p>
+                </div>
+            </main>
+
+            <!-- Right Sidebar - Layers & Properties -->
+            <aside class="right-sidebar">
+                <!-- Properties Panel -->
+                <div class="panel">
+                    <h3>📊 Properties</h3>
+                    <div class="property-group">
+                        <label>Dimensions:</label>
+                        <div class="dimension-display" id="dimensions">No image</div>
+                    </div>
+                    <div class="property-group">
+                        <label>File Size:</label>
+                        <div id="file-size">-</div>
+                    </div>
+                    <div class="property-group">
+                        <label>Format:</label>
+                        <div id="file-format">-</div>
+                    </div>
+                </div>
+
+                <!-- Adjustments Panel -->
+                <div class="panel">
+                    <h3>🎚️ Adjustments</h3>
+                    <div class="slider-group">
+                        <label>Brightness: <span id="brightness-value">0</span></label>
+                        <input type="range" id="brightness" min="-100" max="100" value="0">
+                    </div>
+                    <div class="slider-group">
+                        <label>Contrast: <span id="contrast-value">0</span></label>
+                        <input type="range" id="contrast" min="-100" max="100" value="0">
+                    </div>
+                    <div class="slider-group">
+                        <label>Saturation: <span id="saturation-value">0</span></label>
+                        <input type="range" id="saturation" min="-100" max="100" value="0">
+                    </div>
+                    <div class="slider-group">
+                        <label>Sharpness: <span id="sharpness-value">0</span></label>
+                        <input type="range" id="sharpness" min="0" max="100" value="0">
+                    </div>
+                    <button class="btn btn-secondary" onclick="resetAdjustments()">Reset All</button>
+                </div>
+
+                <!-- Layers Panel -->
+                <div class="panel">
+                    <h3>📚 Layers</h3>
+                    <div class="layer-controls">
+                        <button class="btn-icon" onclick="addLayer()" title="Add Layer">+</button>
+                        <button class="btn-icon" onclick="deleteLayer()" title="Delete Layer">−</button>
+                        <button class="btn-icon" onclick="duplicateLayer()" title="Duplicate">⧉</button>
+                        <button class="btn-icon" onclick="mergeDown()" title="Merge Down">⤓</button>
+                    </div>
+                    <div class="layers-list" id="layers-list">
+                        <div class="layer-item active" data-layer="0">
+                            <div class="layer-thumbnail"></div>
+                            <div class="layer-info">
+                                <span class="layer-name">Background</span>
+                                <input type="range" class="layer-opacity" min="0" max="100" value="100">
+                            </div>
+                            <button class="layer-visibility">👁️</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters Panel -->
+                <div class="panel">
+                    <h3>✨ Quick Filters</h3>
+                    <div class="filter-grid">
+                        <button class="filter-btn" onclick="applyFilter('blur')">Blur</button>
+                        <button class="filter-btn" onclick="applyFilter('sharpen')">Sharpen</button>
+                        <button class="filter-btn" onclick="applyFilter('vintage')">Vintage</button>
+                        <button class="filter-btn" onclick="applyFilter('bw')">B&W</button>
+                        <button class="filter-btn" onclick="applyFilter('sepia')">Sepia</button>
+                        <button class="filter-btn" onclick="applyFilter('vivid')">Vivid</button>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Hidden File Input -->
+    <input type="file" id="file-input" accept="image/*" style="display: none;">
+
+    <!-- AI Prompt Modal -->
+    <div class="modal" id="ai-modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">AI Enhancement</h2>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Describe what you want:</label>
+                    <textarea id="ai-prompt" rows="4" placeholder="E.g., 'add dramatic lighting', 'change background to sunset', 'make it look professional'"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Strength:</label>
+                    <input type="range" id="ai-strength" min="0" max="100" value="75">
+                    <span id="strength-value">75%</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="processAI()">Apply AI</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="editor-script.js"></script>
+</body>
+</html>

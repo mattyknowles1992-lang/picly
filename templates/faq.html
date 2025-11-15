@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ - Frequently Asked Questions | Picly</title>
+    <meta name="description" content="Common questions about Picly's AI image and video generation platform. Learn how tokens work, quality levels, unlimited features, and more.">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .btn-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 25px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.3s;
+        }
+
+        .btn-header:hover {
+            transform: translateY(-2px);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+
+        .page-title {
+            text-align: center;
+            color: white;
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .page-subtitle {
+            text-align: center;
+            color: white;
+            font-size: 20px;
+            margin-bottom: 60px;
+            opacity: 0.95;
+        }
+
+        .faq-search {
+            background: white;
+            border-radius: 50px;
+            padding: 15px 30px;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .faq-search input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            padding: 5px;
+        }
+
+        .faq-search-icon {
+            font-size: 20px;
+            color: #667eea;
+        }
+
+        .faq-categories {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+            justify-content: center;
+        }
+
+        .category-btn {
+            padding: 10px 25px;
+            border-radius: 25px;
+            border: 2px solid white;
+            background: transparent;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .category-btn:hover,
+        .category-btn.active {
+            background: white;
+            color: #667eea;
+        }
+
+        .faq-section {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        .faq-section h2 {
+            font-size: 28px;
+            margin-bottom: 30px;
+            color: #333;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .faq-item {
+            margin-bottom: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .faq-item:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .faq-question {
+            background: #f8f9fa;
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 18px;
+            transition: background 0.3s;
+        }
+
+        .faq-question:hover {
+            background: #e9ecef;
+        }
+
+        .faq-toggle {
+            font-size: 24px;
+            color: #667eea;
+            transition: transform 0.3s;
+        }
+
+        .faq-item.active .faq-toggle {
+            transform: rotate(45deg);
+        }
+
+        .faq-answer {
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            color: #666;
+            line-height: 1.8;
+        }
+
+        .faq-item.active .faq-answer {
+            padding: 20px;
+            max-height: 1000px;
+        }
+
+        .faq-answer ul {
+            margin: 15px 0 15px 25px;
+        }
+
+        .faq-answer li {
+            margin: 8px 0;
+        }
+
+        .faq-answer strong {
+            color: #333;
+        }
+
+        .highlight-box {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+
+        .quality-comparison {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .quality-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .quality-score {
+            font-size: 32px;
+            font-weight: 800;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .quality-name {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .quality-use {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .cta-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            margin-top: 60px;
+        }
+
+        .cta-box h2 {
+            font-size: 32px;
+            margin-bottom: 15px;
+        }
+
+        .cta-box p {
+            font-size: 18px;
+            margin-bottom: 30px;
+            opacity: 0.95;
+        }
+
+        .cta-btn {
+            background: white;
+            color: #667eea;
+            padding: 15px 40px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 18px;
+            display: inline-block;
+            transition: transform 0.3s;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        @media (max-width: 768px) {
+            .page-title {
+                font-size: 32px;
+            }
+
+            .faq-section {
+                padding: 20px;
+            }
+
+            .faq-question {
+                font-size: 16px;
+                padding: 15px;
+            }
+
+            .quality-comparison {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">Picly</div>
+            <a href="/" class="btn-header">Back to Home</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1 class="page-title">Frequently Asked Questions</h1>
+        <p class="page-subtitle">Everything you need to know about Picly</p>
+
+        <!-- Search -->
+        <div class="faq-search">
+            <span class="faq-search-icon">🔍</span>
+            <input type="text" placeholder="Search for answers..." id="faq-search-input" onkeyup="searchFAQ()">
+        </div>
+
+        <!-- Categories -->
+        <div class="faq-categories">
+            <button class="category-btn active" onclick="filterCategory('all')">All</button>
+            <button class="category-btn" onclick="filterCategory('basics')">Basics</button>
+            <button class="category-btn" onclick="filterCategory('pricing')">Pricing</button>
+            <button class="category-btn" onclick="filterCategory('features')">Features</button>
+            <button class="category-btn" onclick="filterCategory('quality')">Quality</button>
+        </div>
+
+        <!-- Getting Started -->
+        <div class="faq-section" data-category="basics">
+            <h2>🚀 Getting Started</h2>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>How does Picly work?</span>
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Picly is an all-in-one AI content creation platform that connects you to the best AI models available:</p>
+                    
+                    <div class="highlight-box">
+                        <strong>For Images:</strong>
+                        <ul>
+                            <li><strong>Flux Schnell</strong> - Free, fast, great quality (8.5/10)</li>
+                            <li><strong>SDXL + Refiner</strong> - High quality, versatile (9/10)</li>
+                            <li><strong>DALL-E 3 HD</strong> - Premium, photorealistic (9.5/10)</li>
+                        </ul>
+                    </div>
+
+                    <div class="highlight-box">
+                        <strong>For Videos:</strong>
+                        <ul>
+                            <li><strong>Cartoon Style</strong> - Fast, stylized, great for animations (8-9/10)</li>
+                            <li><strong>Premium Photorealistic</strong> - Cinema-quality, professional (10/10)</li>
+                        </ul>
+                    </div>
+
+                    <p><strong>Simple process:</strong></p>
+                    <ol>
+                        <li>Sign up for free (no credit card needed)</li>
+                        <li>Get 10 free images daily + daily prize wheel</li>
+                        <li>Upgrade to paid plans for unlimited images + videos</li>
+                        <li>Use tokens for premium features (DALL-E, videos)</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>Do I need technical skills to use Picly?</span>
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Not at all! Picly is designed for everyone:</p>
+                    <ul>
+                        <li><strong>Simple interface:</strong> Just type what you want, click generate</li>
+                        <li><strong>Prompt library:</strong> 100+ pre-made prompts to get started</li>
+                        <li><strong>Style presets:</strong> One-click styles for consistent results</li>
+                        <li><strong>No setup:</strong> Works in your browser, no software to install</li>
+                    </ul>
+                    <p>If you can use Google, you can use Picly! 🎨</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>What's included in the free tier?</span>
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Our free tier is genuinely useful:</p>
+                    <ul>
+                        <li>✅ <strong>10 images per day</strong> (Flux or SDXL quality)</li>
+                        <li>✅ <strong>Daily prize wheel</strong> - Win up to 20 tokens</li>
+                        <li>✅ <strong>Access to prompt library</strong></li>
+                        <li>✅ <strong>All style presets</strong></li>
+                        <li>✅ <strong>Save & download</strong> all your creations</li>
+                        <li>✅ <strong>No credit card required</strong></li>
+                    </ul>
+                    <p>Perfect for trying out the platform and creating a portfolio before upgrading!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Unlimited & Quality -->
+        <div class="faq-section" data-category="quality">
+            <h2>⭐ Quality & Unlimited Features</h2>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>Is it really unlimited images?</span>
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p><strong>Yes, 100% truly unlimited!</strong></p>
+                    
+                    <p>On all paid plans (User, Creator, Pro), you get:</p>
+                    <ul>
+                        <li>✅ <strong>Unlimited Flux Schnell</strong> images (8.5/10 quality)</li>
+                        <li>✅ <strong>Unlimited SDXL + Refiner</strong> images (9/10 quality)</li>
+                        <li>✅ <strong>No daily limits</strong></li>
+                        <li>✅ <strong>No throttling</strong></li>
+                        <li>✅ <strong>No "fair use" clauses</strong></li>
+                    </ul>
+
+                    <div class="highlight-box">
+                        <strong>Why unlimited?</strong> These AI models have very low API costs (Flux is free, SDXL costs us £0.0024 per image). We can afford to make them unlimited while staying profitable. Premium features like DALL-E and videos use tokens because they cost more.
+                    </div>
+
+                    <p><strong>Real example:</strong> Generate 1,000 SDXL images in a day? Go for it! No extra charges. 🚀</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>What quality levels do you offer?</span>
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>We offer 5 quality tiers to match your needs:</p>
+
+                    <div class="quality-comparison">
+                        <div class="quality-card">
+                            <div class="quality-score">8.5/10</div>
+                            <div class="quality-name">Flux Schnell</div>
+                            <div class="quality-use">Fast, free, unlimited</div>
+                        </div>
+                        <div class="quality-card">
+                            <div class="quality-score">9/10</div>
+                            <div class="quality-name">SDXL + Refiner</div>
+                            <div class="quality-use">High quality, unlimited</div>
+                        </div>
+                        <div class="quality-card">
+                            <div class="quality-score">9.5/10</div>
+                            <div class="quality-name">DALL-E 3 HD</div>
+                            <div class="quality-use">Premium images</div>
+                        </div>
+                        <div class="quality-card">
+                            <div class="quality-score">8-9/10</div>
+                            <div class="quality-name">Cartoon Video</div>
+                            <div class="quality-use">Stylized, animated</div>
+                        </div>
+                        <div class="quality-card">
+                            <div class="quality-score">10/10</div>
+                            <div class="quality-name">Premium Video</div>
+                            <div class="quality-use">Photorealistic</div>
+                        </div>
+                    </div>
+
+                    <p><strong>Pro tip:</strong> Use unlimited Flux/SDXL for volume, save tokens for premium features when you need that extra wow factor! 💎</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>How good is the quality compared to Midjourney/DALL-E?</span>
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p><strong>Honest comparison:</strong></p>
+
+                    <div class="highlight-box">
+                        <strong>SDXL (9/10)</strong> vs <strong>Midjourney (9/10)</strong>
+                        <br/>Very similar quality. SDXL is better at following prompts exactly, Midjourney has slightly more artistic style. We give you SDXL unlimited!
+                    </div>
+
+                    <div class="highlight-box">
+                        <strong>DALL-E 3 HD (9.5/10)</strong> vs <strong>DALL-E Direct (9.5/10)</strong>
+                        <br/>Identical - we use the same OpenAI API. You're getting the exact same quality, just with our easier interface and better pricing.
+                    </div>
+
+                    <div class="highlight-box">
+                        <strong>Premium Video (10/10)</strong> vs <strong>Runway (10/10)</strong>
+                        <br/>Same API (Runway Gen-3), same quality. But we give you 70 videos/month for £32 vs Runway's £76 for ~25 videos.
+                    </div>
+
+                    <p><strong>Bottom line:</strong> Same AI models, better value. We don't train our own models - we connect you to the best ones available! 🎯</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pricing & Tokens -->
+        <div class="faq-section" data-category="pricing">
+            <h2>💰 Pricing & Tokens</h2>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>How does the token system work?</span>
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Tokens are credits for premium features. Think of them like currency:</p>
+
+                    <ul>
+                        <li><strong>1 token = £0.008</strong> (less than a penny)</li>
+                        <li><strong>SDXL image:</strong> 2 tokens (£0.016)</li>
+                        <li><strong>DALL-E HD:</strong> 12 tokens (£0.096)</li>
+                        <li><strong>Cartoon video (8s):</strong> 35 tokens (£0.28)</li>
+                        <li><strong>Premium video (8s):</strong> 50 tokens (£0.40)</li>
+                    </ul>
+
+                    <div class="highlight-box">
+                        <strong>Monthly allocations:</strong>
+                        <ul>
+                            <li>User (£9.99): 1050 tokens</li>
+                            <li>Creator (£17.99): 1950 tokens</li>
+                            <li>Pro (£32.00): 3500 tokens</li>
+                        </ul>
+                    </div>
+
+                    <p><strong>Flexibility:</strong> Use all tokens for videos, or split between videos/DALL-E, or save for later. Your choice! 🎨</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>What happens to unused tokens?</span>
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p><strong>Two types of tokens:</strong></p>
+
+                    <div class="highlight-box">
+                        <strong>Monthly subscription tokens:</strong>
+                        <br/>Reset each month. Use them or lose them. (User gets 1050, Creator gets 1950, Pro gets 3500)
+                    </div>
+
+                    <div class="highlight-box">
+                        <strong>Purchased token packages:</strong>
+                        <br/><strong>Never expire!</strong> Buy once, use whenever you want. Perfect for stocking up during sales or as a buffer.
+                    </div>
+
+                    <p><strong>Smart strategy:</strong> Use monthly tokens first, save purchased tokens for when you run out or for special projects! 💡</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>Can I upgrade or downgrade my plan?</span>
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p><strong>Yes, change plans anytime!</strong></p>
+
+                    <p><strong>Upgrading:</strong></p>
+                    <ul>
+                        <li>Immediate access to new features</li>
+                        <li>Get new token allocation right away</li>
+                        <li>Pay the difference, prorated</li>
+                    </ul>
+
+                    <p><strong>Downgrading:</strong></p>
+                    <ul>
+                        <li>Change takes effect next billing cycle</li>
+                        <li>Keep current benefits until then</li>
+                        <li>No penalties or fees</li>
+                    </ul>
+
+                    <p><strong>Example:</strong> Start with User (£9.99), realize you need more videos, upgrade to Creator (£17.99) mid-month. Pay £4 difference, get 1950 tokens immediately! 🚀</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <div class="faq-section" data-category="features">
+            <h2>🎬 Video & Advanced Features</h2>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>What's the difference between cartoon and premium videos?</span>
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="highlight-box">
+                        <strong>Cartoon Videos (8-9/10 quality) - 35 tokens per 8s</strong>
+                        <ul>
+                            <li>Stylized, animated look</li>
+                            <li>Perfect for: Explainer videos, social media, TikTok, YouTube animations</li>
+                            <li>30% cheaper = 42% more videos!</li>
+                            <li>Fast generation (~60 seconds)</li>
+                        </ul>
+                    </div>
+
+                    <div class="highlight-box">
+                        <strong>Premium Videos (10/10 quality) - 50 tokens per 8s</strong>
+                        <ul>
+                            <li>Photorealistic, cinema-quality</li>
+                            <li>Perfect for: Commercials, product demos, professional content</li>
+                            <li>Maximum quality</li>
+                            <li>Slower generation (~90 seconds)</li>
+                        </ul>
+                    </div>
+
+                    <p><strong>Pro tip:</strong> Mix both! Use cartoon for volume content, premium for hero pieces. User tier can do 20 cartoon OR 15 premium + 5 cartoon! 🎥</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>Can I use the content commercially?</span>
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p><strong>Yes, on all paid plans!</strong></p>
+
+                    <p><strong>Commercial rights include:</strong></p>
+                    <ul>
+                        <li>✅ Sell images/videos you create</li>
+                        <li>✅ Use in client projects</li>
+                        <li>✅ Use in advertising/marketing</li>
+                        <li>✅ Use on products (t-shirts, books, etc.)</li>
+                        <li>✅ Use on social media (monetized)</li>
+                        <li>✅ No attribution required</li>
+                    </ul>
+
+                    <div class="highlight-box">
+                        <strong>Free tier:</strong> Personal use only (no commercial use)
+                        <br/><strong>User/Creator/Pro:</strong> Full commercial license included!
+                    </div>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>Do you have an API?</span>
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p><strong>Coming soon for Creator & Pro tiers!</strong></p>
+
+                    <p><strong>API features (in development):</strong></p>
+                    <ul>
+                        <li>REST API for all generation features</li>
+                        <li>Webhook support for async operations</li>
+                        <li>Batch processing endpoints</li>
+                        <li>Usage analytics dashboard</li>
+                    </ul>
+
+                    <p><strong>Rate limits:</strong></p>
+                    <ul>
+                        <li>Creator: 100 requests/minute</li>
+                        <li>Pro: 500 requests/minute</li>
+                    </ul>
+
+                    <p>Sign up for our newsletter to be notified when API access launches! 🔌</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Support & Billing -->
+        <div class="faq-section" data-category="basics">
+            <h2>🛟 Support & Billing</h2>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>Do you offer refunds?</span>
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p><strong>Yes! 7-day money-back guarantee.</strong></p>
+
+                    <p>If you're not satisfied with your first subscription, contact us within 7 days for a full refund, no questions asked.</p>
+
+                    <p><strong>Refund policy:</strong></p>
+                    <ul>
+                        <li>✅ First subscription only</li>
+                        <li>✅ Within 7 days of purchase</li>
+                        <li>✅ Full refund, no penalties</li>
+                        <li>✅ Keep all content you created</li>
+                    </ul>
+
+                    <p>Note: Token packages are non-refundable once purchased (they never expire though!).</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>How do I cancel my subscription?</span>
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p><strong>Cancel anytime, no hassle:</strong></p>
+
+                    <ol>
+                        <li>Go to Account Settings</li>
+                        <li>Click "Manage Subscription"</li>
+                        <li>Click "Cancel Subscription"</li>
+                    </ol>
+
+                    <p><strong>What happens:</strong></p>
+                    <ul>
+                        <li>✅ Keep access until end of billing period</li>
+                        <li>✅ No partial refunds (but you keep what you paid for)</li>
+                        <li>✅ Purchased tokens never expire</li>
+                        <li>✅ Can reactivate anytime</li>
+                    </ul>
+
+                    <p>We make it easy to leave because we're confident you'll want to stay! 😊</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>How do I contact support?</span>
+                    <span class="faq-toggle">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p><strong>We're here to help!</strong></p>
+
+                    <p><strong>Support channels:</strong></p>
+                    <ul>
+                        <li>📧 Email: support@picly.com (24-48hr response)</li>
+                        <li>💬 Live chat: Available 9am-6pm GMT (Pro users only)</li>
+                        <li>📚 Help Center: help.picly.com</li>
+                        <li>🎥 Video tutorials: youtube.com/picly</li>
+                    </ul>
+
+                    <div class="highlight-box">
+                        <strong>Pro tier:</strong> Dedicated support with priority response (under 4 hours)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA -->
+        <div class="cta-box">
+            <h2>Still Have Questions?</h2>
+            <p>Start free and explore Picly yourself. No credit card required!</p>
+            <a href="/signup" class="cta-btn">Start Creating Free →</a>
+        </div>
+    </div>
+
+    <script>
+        function toggleFAQ(element) {
+            const faqItem = element.parentElement;
+            const isActive = faqItem.classList.contains('active');
+            
+            // Close all FAQs
+            document.querySelectorAll('.faq-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Open clicked FAQ if it wasn't active
+            if (!isActive) {
+                faqItem.classList.add('active');
+            }
+        }
+
+        function filterCategory(category) {
+            // Update active button
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // Filter sections
+            document.querySelectorAll('.faq-section').forEach(section => {
+                if (category === 'all' || section.dataset.category === category) {
+                    section.style.display = 'block';
+                } else {
+                    section.style.display = 'none';
+                }
+            });
+        }
+
+        function searchFAQ() {
+            const searchTerm = document.getElementById('faq-search-input').value.toLowerCase();
+            
+            document.querySelectorAll('.faq-item').forEach(item => {
+                const question = item.querySelector('.faq-question').textContent.toLowerCase();
+                const answer = item.querySelector('.faq-answer').textContent.toLowerCase();
+                
+                if (question.includes(searchTerm) || answer.includes(searchTerm)) {
+                    item.style.display = 'block';
+                    if (searchTerm.length > 2) {
+                        item.classList.add('active'); // Auto-expand matches
+                    }
+                } else {
+                    item.style.display = searchTerm === '' ? 'block' : 'none';
+                }
+            });
+
+            // Show all sections when searching
+            if (searchTerm.length > 0) {
+                document.querySelectorAll('.faq-section').forEach(section => {
+                    section.style.display = 'block';
+                });
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Low Token Balance - Picly</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif; background-color: #f5f5f5;">
+    <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f5f5f5;">
+        <tr>
+            <td align="center" style="padding: 40px 20px;">
+                <!-- Main Container -->
+                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="600" style="max-width: 600px; background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);">
+                    
+                    <!-- Header with Warning Icon -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #ff9a56 0%, #ff6b6b 100%); padding: 40px 40px 50px; text-align: center; border-radius: 16px 16px 0 0;">
+                            <div style="width: 80px; height: 80px; background: #ffffff; border-radius: 50%; margin: 0 auto 20px; line-height: 80px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                                <span style="font-size: 48px;">⚠️</span>
+                            </div>
+                            <h1 style="margin: 0 0 10px; font-size: 32px; font-weight: 800; color: #ffffff; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">
+                                Running Low on Tokens
+                            </h1>
+                            <p style="margin: 0; font-size: 18px; color: #ffffff; opacity: 0.95;">
+                                Your token balance is getting low
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Warning Message -->
+                    <tr>
+                        <td style="padding: 40px;">
+                            <h2 style="margin: 0 0 15px; font-size: 24px; color: #333333;">
+                                Hi {{ user_name }}, 👋
+                            </h2>
+                            <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6; color: #666666;">
+                                You're running low on tokens! Here's what you have left:
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Token Balance -->
+                    <tr>
+                        <td style="padding: 0 40px 30px;">
+                            <div style="background: linear-gradient(135deg, #fff9e6 0%, #ffedd5 100%); border-radius: 12px; padding: 30px; border-left: 4px solid #ff9a56; text-align: center;">
+                                <p style="margin: 0 0 10px; font-size: 16px; color: #666666;">
+                                    Current Token Balance
+                                </p>
+                                <p style="margin: 0 0 20px; font-size: 48px; font-weight: 800; color: #ff6b6b;">
+                                    {{ token_balance }}
+                                </p>
+                                <p style="margin: 0; font-size: 14px; color: #999999;">
+                                    {% if threshold == 'critical' %}
+                                    ⚠️ Critical: Less than 10% remaining
+                                    {% elif threshold == 'low' %}
+                                    ⚡ Low: Less than 25% remaining
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- What This Means -->
+                    <tr>
+                        <td style="padding: 0 40px 30px;">
+                            <h3 style="margin: 0 0 20px; font-size: 20px; color: #333333; border-bottom: 3px solid #ff9a56; padding-bottom: 10px;">
+                                📊 What You Can Still Create
+                            </h3>
+                            
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background: #f8f9fa; border-radius: 12px; padding: 20px;">
+                                {% if remaining_dalle > 0 %}
+                                <tr>
+                                    <td style="padding: 10px 0;">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                            <tr>
+                                                <td style="color: #666666; font-size: 15px;">
+                                                    <strong>DALL-E HD Images:</strong>
+                                                </td>
+                                                <td align="right" style="color: #333333; font-weight: 700; font-size: 16px;">
+                                                    ~{{ remaining_dalle }}
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% if remaining_cartoon_videos > 0 %}
+                                <tr>
+                                    <td style="padding: 10px 0;">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                            <tr>
+                                                <td style="color: #666666; font-size: 15px;">
+                                                    <strong>Cartoon Videos (8s):</strong>
+                                                </td>
+                                                <td align="right" style="color: #333333; font-weight: 700; font-size: 16px;">
+                                                    ~{{ remaining_cartoon_videos }}
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                                {% if remaining_premium_videos > 0 %}
+                                <tr>
+                                    <td style="padding: 10px 0;">
+                                        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                            <tr>
+                                                <td style="color: #666666; font-size: 15px;">
+                                                    <strong>Premium Videos (8s):</strong>
+                                                </td>
+                                                <td align="right" style="color: #333333; font-weight: 700; font-size: 16px;">
+                                                    ~{{ remaining_premium_videos }}
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                {% endif %}
+                            </table>
+
+                            <p style="margin: 20px 0 0; font-size: 14px; color: #999999; text-align: center;">
+                                💡 Remember: Unlimited Flux & SDXL images don't use tokens!
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- When Tokens Renew -->
+                    {% if next_renewal_date %}
+                    <tr>
+                        <td style="padding: 0 40px 30px;">
+                            <div style="background: #e9efff; border-radius: 12px; padding: 20px; border-left: 4px solid #667eea;">
+                                <p style="margin: 0 0 5px; font-size: 14px; color: #666666;">
+                                    <strong>Next token renewal:</strong>
+                                </p>
+                                <p style="margin: 0; font-size: 18px; font-weight: 700; color: #333333;">
+                                    {{ next_renewal_date }}
+                                </p>
+                                <p style="margin: 10px 0 0; font-size: 14px; color: #666666;">
+                                    You'll get <strong>{{ monthly_token_allocation }} tokens</strong> on your {{ plan_name }} plan
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endif %}
+
+                    <!-- Options to Get More Tokens -->
+                    <tr>
+                        <td style="padding: 0 40px 30px;">
+                            <h3 style="margin: 0 0 20px; font-size: 20px; color: #333333; border-bottom: 3px solid #ff9a56; padding-bottom: 10px;">
+                                💡 Ways to Get More Tokens
+                            </h3>
+
+                            <!-- Option 1: Buy Token Package -->
+                            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin-bottom: 15px; border: 2px solid #e0e0e0;">
+                                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                    <tr>
+                                        <td style="padding-right: 15px;">
+                                            <h4 style="margin: 0 0 8px; font-size: 18px; color: #333333;">
+                                                🎯 Buy Token Package
+                                            </h4>
+                                            <p style="margin: 0 0 15px; font-size: 15px; color: #666666;">
+                                                Get tokens instantly. Never expire!
+                                            </p>
+                                            <ul style="margin: 0; padding-left: 20px; font-size: 14px; color: #666666; line-height: 1.6;">
+                                                <li>500 tokens - £4.99</li>
+                                                <li>1250 tokens - £11.99 (10% bonus)</li>
+                                                <li>3000 tokens - £27.99 (15% bonus)</li>
+                                            </ul>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <div style="margin-top: 15px; text-align: center;">
+                                    <a href="{{ app_url }}/purchase-tokens" style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; padding: 12px 30px; border-radius: 25px; text-decoration: none; font-weight: 700; font-size: 16px;">
+                                        Buy Tokens Now →
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Option 2: Upgrade Plan -->
+                            {% if can_upgrade %}
+                            <div style="background: #f8f9fa; border-radius: 12px; padding: 20px; margin-bottom: 15px; border: 2px solid #e0e0e0;">
+                                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                    <tr>
+                                        <td style="padding-right: 15px;">
+                                            <h4 style="margin: 0 0 8px; font-size: 18px; color: #333333;">
+                                                ⬆️ Upgrade Your Plan
+                                            </h4>
+                                            <p style="margin: 0; font-size: 15px; color: #666666;">
+                                                Get more tokens every month + better value
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <div style="margin-top: 15px; text-align: center;">
+                                    <a href="{{ app_url }}/pricing" style="display: inline-block; background: transparent; color: #667eea; border: 2px solid #667eea; padding: 12px 30px; border-radius: 25px; text-decoration: none; font-weight: 700; font-size: 16px;">
+                                        View Plans →
+                                    </a>
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Option 3: Daily Wheel -->
+                            <div style="background: linear-gradient(135deg, #f0f4ff 0%, #e9efff 100%); border-radius: 12px; padding: 20px; border-left: 4px solid #667eea;">
+                                <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                    <tr>
+                                        <td>
+                                            <h4 style="margin: 0 0 8px; font-size: 18px; color: #333333;">
+                                                🎡 Daily Prize Wheel
+                                            </h4>
+                                            <p style="margin: 0; font-size: 15px; color: #666666;">
+                                                Free spin every 24 hours - Win up to 20 tokens!
+                                            </p>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Tips to Conserve Tokens -->
+                    <tr>
+                        <td style="padding: 0 40px 40px;">
+                            <div style="background: #fff9e6; border-radius: 12px; padding: 20px; border-left: 4px solid #ffc107;">
+                                <h4 style="margin: 0 0 15px; font-size: 16px; color: #333333;">
+                                    💡 Pro Tips to Save Tokens
+                                </h4>
+                                <ul style="margin: 0; padding-left: 20px; font-size: 14px; color: #666666; line-height: 1.8;">
+                                    <li>Use <strong>unlimited Flux/SDXL</strong> for drafts and volume work</li>
+                                    <li>Save <strong>DALL-E HD</strong> for final, polished images</li>
+                                    <li>Use <strong>cartoon videos</strong> (35 tokens) instead of premium (50 tokens) when appropriate</li>
+                                    <li>Test prompts with free models before using token features</li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="padding: 30px 40px; background-color: #f8f9fa; border-radius: 0 0 16px 16px;">
+                            <p style="margin: 0 0 15px; font-size: 14px; color: #999999; text-align: center;">
+                                Questions? Check your <a href="{{ app_url }}/account" style="color: #667eea; text-decoration: none;">account dashboard</a> or <a href="mailto:support@picly.com" style="color: #667eea; text-decoration: none;">contact support</a>
+                            </p>
+                            <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%">
+                                <tr>
+                                    <td align="center" style="padding-bottom: 15px;">
+                                        <a href="{{ app_url }}" style="color: #667eea; text-decoration: none; margin: 0 10px; font-size: 14px;">Dashboard</a>
+                                        <span style="color: #cccccc;">|</span>
+                                        <a href="{{ app_url }}/purchase-tokens" style="color: #667eea; text-decoration: none; margin: 0 10px; font-size: 14px;">Buy Tokens</a>
+                                        <span style="color: #cccccc;">|</span>
+                                        <a href="{{ app_url }}/pricing" style="color: #667eea; text-decoration: none; margin: 0 10px; font-size: 14px;">Upgrade</a>
+                                    </td>
+                                </tr>
+                            </table>
+                            <p style="margin: 0; font-size: 13px; color: #999999; text-align: center;">
+                                © 2025 Picly. All rights reserved.<br>
+                                You're receiving this because your token balance is low.<br>
+                                <a href="{{ app_url }}/account/notifications" style="color: #999999; text-decoration: underline;">Notification Settings</a>
+                            </p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

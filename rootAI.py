@@ -755,6 +755,12 @@ def pricing_page():
     return render_template('pricing.html')
 
 
+@app.route('/faq')
+def faq_page():
+    """Serve the FAQ page"""
+    return render_template('faq.html')
+
+
 @app.route('/admin')
 def admin_dashboard():
     """Serve the admin dashboard"""

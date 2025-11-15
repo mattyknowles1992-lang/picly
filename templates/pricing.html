@@ -125,18 +125,26 @@
 
         .nav-links {
             display: flex;
-            gap: 2rem;
+            gap: 1rem;
         }
 
         .nav-links a {
-            color: #cbd5e1;
+            color: #94a3b8;
             text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
             font-weight: 500;
-            transition: color 0.3s;
+            transition: all 0.3s;
         }
 
         .nav-links a:hover {
+            color: #f1f5f9;
+            background: rgba(30, 41, 59, 0.5);
+        }
+
+        .nav-links a.active {
             color: #6366f1;
+            background: rgba(99, 102, 241, 0.1);
         }
 
         .btn-header {
@@ -543,7 +551,7 @@
             <div class="nav-links">
                 <a href="/">Generator</a>
                 <a href="/video.html">Video</a>
-                <a href="/pricing">Pricing</a>
+                <a href="/pricing" class="active">Pricing</a>
                 <a href="/faq">FAQ</a>
             </div>
             <a href="/" class="btn-header">Start Free</a>

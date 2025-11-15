@@ -847,6 +847,16 @@
                 return;
             }
 
+            // Check if user has Pro or Creator plan for preview feature
+            const userPlan = currentUser.subscription_tier || 'free';
+            const hasPreviewAccess = userPlan === 'creator' || userPlan === 'pro';
+
+            if (!hasPreviewAccess) {
+                // Show upgrade modal for User plan subscribers
+                showPreviewUpgradeModal();
+                return;
+            }
+
             const token = localStorage.getItem('authToken');
             const generateBtn = document.getElementById('generateBtn');
             const loadingOverlay = document.getElementById('loadingOverlay');
@@ -859,7 +869,7 @@
             loadingSubtext.textContent = 'Creating first frame preview (no credits used)';
 
             try {
-                // Step 1: Generate preview image (free, best quality)
+                // Step 1: Generate preview image (free, best quality) - Only for Pro/Creator
                 const previewResponse = await fetch('/api/generate-video-preview', {
                     method: 'POST',
                     headers: {
@@ -890,6 +900,104 @@
             } finally {
                 generateBtn.disabled = false;
             }
+        }
+
+        function showPreviewUpgradeModal() {
+            // Create upgrade modal
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                backdrop-filter: blur(10px);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                animation: fadeIn 0.3s ease;
+            `;
+            
+            modal.innerHTML = `
+                <div style="
+                    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+                    backdrop-filter: blur(20px);
+                    border: 2px solid rgba(99, 102, 241, 0.4);
+                    border-radius: 20px;
+                    padding: 3rem;
+                    max-width: 500px;
+                    margin: 0 1rem;
+                    text-align: center;
+                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+                ">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">🎬✨</div>
+                    <h2 style="font-size: 1.8rem; margin-bottom: 1rem; color: white;">
+                        FREE Video Preview
+                    </h2>
+                    <p style="font-size: 1rem; color: #cbd5e1; margin-bottom: 1.5rem; line-height: 1.6;">
+                        See exactly what your video will look like <strong>before</strong> spending credits! 
+                        Available exclusively for <strong>Creator</strong> and <strong>Pro</strong> plan members.
+                    </p>
+                    
+                    <div style="
+                        background: rgba(255, 255, 255, 0.05);
+                        border: 1px solid rgba(255, 255, 255, 0.1);
+                        border-radius: 12px;
+                        padding: 1.5rem;
+                        margin-bottom: 2rem;
+                        text-align: left;
+                    ">
+                        <div style="color: #10b981; font-weight: 600; margin-bottom: 0.75rem;">✓ Preview Benefits:</div>
+                        <div style="color: #cbd5e1; font-size: 0.9rem; line-height: 1.8;">
+                            • See first frame before generating video<br>
+                            • No credits wasted on unwanted videos<br>
+                            • Edit prompt until preview looks perfect<br>
+                            • 100% FREE - Only pay when you confirm
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                        <button onclick="window.location.href='/pricing'" style="
+                            flex: 2;
+                            padding: 1rem 2rem;
+                            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+                            color: white;
+                            border: none;
+                            border-radius: 12px;
+                            font-size: 1.1rem;
+                            font-weight: 600;
+                            cursor: pointer;
+                        ">
+                            🚀 Upgrade Now
+                        </button>
+                        <button onclick="this.closest('[style*=fixed]').remove()" style="
+                            flex: 1;
+                            padding: 1rem 2rem;
+                            background: rgba(148, 163, 184, 0.1);
+                            color: #94a3b8;
+                            border: 1px solid rgba(148, 163, 184, 0.3);
+                            border-radius: 12px;
+                            font-size: 1rem;
+                            font-weight: 600;
+                            cursor: pointer;
+                        ">
+                            Maybe Later
+                        </button>
+                    </div>
+                    
+                    <p style="
+                        margin-top: 1.5rem;
+                        font-size: 0.85rem;
+                        color: #64748b;
+                    ">
+                        You can still generate videos normally - just no preview
+                    </p>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
         }
 
         function displayPreview(previewUrl, prompt) {

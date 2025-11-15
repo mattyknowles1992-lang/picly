@@ -2563,6 +2563,18 @@ def generate_video_preview():
         
         user_id = validation['user_id']
         
+        # Check subscription tier - Preview only available for Creator and Pro plans
+        user_data = user_db.get_user(user_id)
+        subscription_tier = user_data.get('subscription_tier', 'free')
+        
+        if subscription_tier not in ['creator', 'pro']:
+            return jsonify({
+                'success': False,
+                'error': 'Preview feature requires Creator or Pro plan',
+                'upgrade_required': True,
+                'current_plan': subscription_tier
+            }), 403
+        
         # Get request data
         data = request.get_json()
         prompt = data.get('prompt', '')
